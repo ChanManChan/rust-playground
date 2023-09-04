@@ -1,5 +1,6 @@
-const OUR_COURSE: &str = "Rust with AutoGPT";
+// const OUR_COURSE: &str = "Rust with AutoGPT";
 
+// Fixed size variables
 // fn main() {
 //     println!("Welcome to the {} course", OUR_COURSE);
 
@@ -41,6 +42,7 @@ const OUR_COURSE: &str = "Rust with AutoGPT";
 //     println!("my_floats_new is {:?}", my_floats_new);
 // }
 
+// Dynamic sized variables & Basic collections
 // fn main() {
 //     let name: &str = "Nandu";
 //     println!("name is {}", name);
@@ -88,6 +90,7 @@ const OUR_COURSE: &str = "Rust with AutoGPT";
 //     }
 // }
 
+// Closures
 // fn main() {
 //     let num: i32 = 5;
 //     let add_num = |x: i32| x + num;
@@ -95,6 +98,7 @@ const OUR_COURSE: &str = "Rust with AutoGPT";
 //     dbg!(new_num);
 // }
 
+// Number literals and raw string
 // fn main() {
 //     println!("Big number is {}", 98_222_0000);
 //     println!("Hex is {}", 0xff);
@@ -106,6 +110,7 @@ const OUR_COURSE: &str = "Rust with AutoGPT";
 //     dbg!(text);
 // }
 
+// Low level with binary
 fn main() {
     let a: u8 = 0b_1010_1010;
     let b: u8 = 0b_0101_1010;

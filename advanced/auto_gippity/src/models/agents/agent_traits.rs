@@ -13,7 +13,7 @@ pub struct RouteObject {
     pub response: serde_json::Value,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, Copy, PartialEq)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 pub struct ProjectScope {
     pub is_crud_required: bool,
     pub is_user_login_and_logout: bool,
