@@ -1,5 +1,5 @@
 use async_trait::async_trait;
-use serde::{ Deserialize, Serialize };
+use serde::{Deserialize, Serialize};
 use std::fmt::Debug;
 
 use crate::models::agents_basic::basic_agent::BasicAgent;
@@ -31,8 +31,11 @@ pub struct FactSheet {
 
 #[async_trait]
 pub trait SpecialFunctions: Debug {
-    // Use so that manager can get attributes from Agents 
+    // Use so that manager can get attributes from Agents
     fn get_attributes_from_agent(&self) -> &BasicAgent;
     // This function will allow agents to execute their logic
-    async fn execute(&mut self, fact_sheet: &mut FactSheet) -> Result<(), Box<dyn std::error::Error>>;
-} 
+    async fn execute(
+        &mut self,
+        fact_sheet: &mut FactSheet,
+    ) -> Result<(), Box<dyn std::error::Error>>;
+}

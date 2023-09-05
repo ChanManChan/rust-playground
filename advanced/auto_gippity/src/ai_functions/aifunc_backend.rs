@@ -72,7 +72,7 @@ pub fn print_rest_api_endpoints(_code_input: &str) {
     /// [
     ///   {
     ///     "route": "/item/{id}",
-    ///     "is_route_dynamic": "true",
+    ///     "is_route_dynamic": true,
     ///     "method": "get"
     ///     "request_body": "None",
     ///     "response": {
@@ -83,7 +83,7 @@ pub fn print_rest_api_endpoints(_code_input: &str) {
     ///   },
     ///   {
     ///     "route": "/item",
-    ///     "is_route_dynamic": "false",
+    ///     "is_route_dynamic": false,
     ///     "method": "post",
     ///     "request_body": {
     ///       "id": "number",
@@ -94,14 +94,14 @@ pub fn print_rest_api_endpoints(_code_input: &str) {
     ///   },
     ///   {
     ///     "route": "/item/{id}",
-    ///     "is_route_dynamic": "true",
+    ///     "is_route_dynamic": true,
     ///     "method": "delete",
     ///     "request_body": "None",
     ///     "response": "None"
     ///   },
     ///   {
     ///     "route": "/crypto",
-    ///     "is_route_dynamic": "false",
+    ///     "is_route_dynamic": false,
     ///     "method": "get",
     ///     "request_body": "None",
     ///     "response": "not_provided"

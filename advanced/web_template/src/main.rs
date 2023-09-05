@@ -2,11 +2,11 @@ use actix_cors::Cors;
 use actix_web::{ http::header, web, App, HttpServer, Responder, HttpResponse };
 use serde::{ Deserialize, Serialize };
 use reqwest::Client as HttpClient;
-use async_trait::async_trait;
 use std::sync::Mutex;
 use std::collections::HashMap;
 use std::fs;
 use std::io::Write;
+use chrono::Utc;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 struct Task {
@@ -136,6 +136,11 @@ async fn login(app_state: web::Data<AppState>, user: web::Json<User>) -> impl Re
     }
 }
 
+async fn get_current_time() -> impl Responder {
+    let current_time = Utc::now().to_string();
+    HttpResponse::Ok().body(current_time)
+}
+
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     let db: Database = match Database::load_from_file() {
@@ -167,6 +172,7 @@ async fn main() -> std::io::Result<()> {
         .route("/task/{id}", web::delete().to(delete_task))
         .route("/register", web::post().to(register))
         .route("/login", web::post().to(login))
+        .route("/time", web::get().to(get_current_time))
     })
     .bind("127.0.0.1:8080")?
     .run()
