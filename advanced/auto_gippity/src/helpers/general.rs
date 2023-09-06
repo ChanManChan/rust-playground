@@ -31,13 +31,15 @@ pub async fn ai_task_request(
     // Get LLM response
     let llm_response_res: Result<String, Box<dyn std::error::Error + Send>> =
         call_gpt(vec![extended_msg.clone()]).await;
-
+    
     // Return success or try again
     match llm_response_res {
         Ok(llm_res) => llm_res,
-        Err(_) => call_gpt(vec![extended_msg.clone()])
+        Err(_) => {
+            call_gpt(vec![extended_msg.clone()])
             .await
-            .expect("Failed twice"),
+            .expect("Failed twice")
+        },
     }
 }
 

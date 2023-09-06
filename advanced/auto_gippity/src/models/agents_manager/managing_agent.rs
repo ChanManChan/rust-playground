@@ -3,7 +3,8 @@ use crate::{
     helpers::general::ai_task_request,
     models::{
         agents::{
-            agent_architect::{self, AgentSolutionArchitect},
+            agent_architect::{ AgentSolutionArchitect },
+            agent_backend::{ AgentBackendDeveloper },
             agent_traits::{FactSheet, SpecialFunctions},
         },
         agents_basic::basic_agent::{AgentState, BasicAgent},
@@ -60,6 +61,7 @@ impl ManagingAgent {
 
     fn create_agents(&mut self) {
         self.add_agent(Box::new(AgentSolutionArchitect::new()));
+        self.add_agent(Box::new(AgentBackendDeveloper::new()));
     }
 
     pub async fn execute_project(&mut self) {
@@ -68,8 +70,8 @@ impl ManagingAgent {
         for agent in &mut self.agents {
             let _agent_res: Result<(), Box<dyn std::error::Error>> =
                 agent.execute(&mut self.fact_sheet).await;
-            let agent_info: &BasicAgent = agent.get_attributes_from_agent();
-            dbg!(agent_info);
+            // let agent_info: &BasicAgent = agent.get_attributes_from_agent();
+            // dbg!(agent_info);
         }
     }
 }
