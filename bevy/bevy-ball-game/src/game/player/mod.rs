@@ -1,7 +1,7 @@
 mod components;
 mod systems;
 
-pub const PLAYER_SIZE: f32 = 64.0; // Player sprite size
+pub const PLAYER_SIZE: f32 = 64.0;
 pub const PLAYER_SPEED: f32 = 500.0;
 
 use bevy::{app::IntoSystemAppConfig, ecs::schedule::{IntoSystemConfig, IntoSystemConfigs, OnEnter, OnExit, OnUpdate}};
