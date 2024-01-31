@@ -34,7 +34,7 @@ pub const BUTTON_STYLE: Style = Style {
 
 pub fn get_title_text_style(asset_server: &Res<AssetServer>) -> TextStyle {
     TextStyle {
-        font: asset_server.load("fonts/FiraSans-Bold.ttf"),
+        font: asset_server.load("__wasm__bally/fonts/FiraSans-Bold.ttf"),
         font_size: 64.0,
         color: Color::rgb(1.0, 1.0, 1.0),
     }
@@ -42,7 +42,7 @@ pub fn get_title_text_style(asset_server: &Res<AssetServer>) -> TextStyle {
 
 pub fn get_button_text_style(asset_server: &Res<AssetServer>) -> TextStyle {
     TextStyle {
-        font: asset_server.load("fonts/FiraSans-Bold.ttf"),
+        font: asset_server.load("__wasm__bally/fonts/FiraSans-Bold.ttf"),
         font_size: 32.0,
         color: Color::rgb(1.0, 1.0, 1.0),
     }

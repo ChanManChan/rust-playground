@@ -3,14 +3,20 @@ mod systems;
 mod game;
 mod main_menu;
 
-use bevy::{ecs::schedule::States, prelude::{App, DefaultPlugins}};
+use bevy::{app::PluginGroup, ecs::schedule::States, prelude::{default, App, DefaultPlugins}, window::{Window, WindowPlugin}};
 use game::GamePlugin;
 use main_menu::MainMenuPlugin;
 use systems::*;
 
 fn main() {
     App::new()
-        .add_plugins(DefaultPlugins)
+        .add_plugins(DefaultPlugins.set(WindowPlugin {
+            primary_window: Some(Window {
+                canvas: Some("#nandu".to_string()),
+                ..default()
+            }),
+            ..default()
+        }))
         .add_state::<AppState>()
         .add_plugin(GamePlugin)
         .add_plugin(MainMenuPlugin)

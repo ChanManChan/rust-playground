@@ -16,7 +16,7 @@ pub fn spawn_enemies(mut commands: Commands, window_query: Query<&Window, With<P
         commands.spawn((
             SpriteBundle {
                 transform: Transform::from_xyz(random_x, random_y, 0.0),
-                texture: asset_server.load("sprites/ball_red_large.png"),
+                texture: asset_server.load("__wasm__bally/sprites/ball_red_large.png"),
                 ..default()
             },
             Enemy {
@@ -64,8 +64,8 @@ pub fn update_enemy_direction(mut enemy_query: Query<(&Transform, &mut Enemy)>, 
         }
 
         if direction_changed {
-            let sound_effect_1 = asset_server.load("audio/pluck_001.ogg");
-            let sound_effect_2 = asset_server.load("audio/pluck_002.ogg");
+            let sound_effect_1 = asset_server.load("__wasm__bally/audio/pluck_001.ogg");
+            let sound_effect_2 = asset_server.load("__wasm__bally/audio/pluck_002.ogg");
 
             let sound_effect = if random::<f32>() > 0.5 {
                 sound_effect_1
@@ -118,7 +118,7 @@ pub fn spawn_enemies_over_time(mut commands: Commands, window_query: Query<&Wind
         commands.spawn((
             SpriteBundle {
                 transform: Transform::from_xyz(random_x, random_y, 0.0),
-                texture: asset_server.load("sprites/ball_red_large.png"),
+                texture: asset_server.load("__wasm__bally/sprites/ball_red_large.png"),
                 ..default()
             },
             Enemy {

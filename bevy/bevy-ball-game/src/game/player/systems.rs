@@ -16,7 +16,7 @@ pub fn spawn_player(mut commands: Commands, window_query: Query<&Window, With<Pr
     commands.spawn((
        SpriteBundle {
            transform: Transform::from_xyz(window.width() / 2.0, window.height() / 2.0, 0.0),
-           texture: asset_server.load("sprites/ball_blue_large.png"),
+           texture: asset_server.load("__wasm__bally/sprites/ball_blue_large.png"),
            ..default()
        },
        Player {}
@@ -98,7 +98,7 @@ pub fn enemy_hit_player(mut commands: Commands,mut game_over_event_writer: Event
 
             if distance < player_radius + enemy_radius {
                 println!("Enemy hit player! Game Over!");
-                let explosion_sound_effect = asset_server.load("audio/explosionCrunch_000.ogg");
+                let explosion_sound_effect = asset_server.load("__wasm__bally/audio/explosionCrunch_000.ogg");
                 audio.play(explosion_sound_effect);
                 commands.entity(player_entity).despawn();
                 game_over_event_writer.send(GameOver { score: score.value });
@@ -118,7 +118,7 @@ pub fn player_hit_star(mut commands: Commands, player_query: Query<&Transform, W
             if distance < player_radius + star_radius {
                 println!("Player hit star!");
                 score.value += 1;
-                let laser_sound_effect = asset_server.load("audio/laserLarge_000.ogg");
+                let laser_sound_effect = asset_server.load("__wasm__bally/audio/laserLarge_000.ogg");
                 audio.play(laser_sound_effect);
                 commands.entity(star_entity).despawn(); 
             }

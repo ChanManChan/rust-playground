@@ -28,7 +28,7 @@ pub fn build_hud(commands: &mut Commands, asset_server: &Res<AssetServer>) -> En
                     // Star Image
                     parent.spawn(ImageBundle {
                         style: IMAGE_STYLE,
-                        image: asset_server.load("sprites/star.png").into(),
+                        image: asset_server.load("__wasm__bally/sprites/star.png").into(),
                         ..default()
                     });
 
@@ -78,7 +78,7 @@ pub fn build_hud(commands: &mut Commands, asset_server: &Res<AssetServer>) -> En
                     // Enemy Image
                     parent.spawn(ImageBundle {
                         style: IMAGE_STYLE,
-                        image: asset_server.load("sprites/ball_red_large.png").into(),
+                        image: asset_server.load("__wasm__bally/sprites/ball_red_large.png").into(),
                         ..default()
                     });
                 });

@@ -16,7 +16,7 @@ pub fn spawn_stars(mut commands: Commands, window_query: Query<&Window, With<Pri
         commands.spawn((
             SpriteBundle {
                 transform: Transform::from_xyz(random_x, random_y, 0.0),
-                texture: asset_server.load("sprites/star.png"),
+                texture: asset_server.load("__wasm__bally/sprites/star.png"),
                 ..default()
             },
             Star {}
@@ -43,7 +43,7 @@ pub fn spawn_stars_over_time(mut commands: Commands, window_query: Query<&Window
         commands.spawn((
             SpriteBundle {
                 transform: Transform::from_xyz(random_x, random_y, 0.0),
-                texture: asset_server.load("sprites/star.png"),
+                texture: asset_server.load("__wasm__bally/sprites/star.png"),
                 ..default()
             },
             Star {}
