@@ -13,8 +13,6 @@ pub struct GameUIPlugin;
 impl Plugin for GameUIPlugin {
     fn build(&self, app: &mut App) {
         app
-            .add_plugin(HudPlugin)
-            .add_plugin(PauseMenuPlugin)
-            .add_plugin(GameOverMenuPlugin);
+            .add_plugins((HudPlugin, PauseMenuPlugin, GameOverMenuPlugin));
     }
 }

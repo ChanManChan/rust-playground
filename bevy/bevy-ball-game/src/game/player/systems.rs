@@ -1,4 +1,4 @@
-use bevy::prelude::*;
+use bevy::{audio::Volume, prelude::*};
 use bevy::window::PrimaryWindow;
 
 use super::components::Player;
@@ -16,7 +16,7 @@ pub fn spawn_player(mut commands: Commands, window_query: Query<&Window, With<Pr
     commands.spawn((
        SpriteBundle {
            transform: Transform::from_xyz(window.width() / 2.0, window.height() / 2.0, 0.0),
-           texture: asset_server.load("__wasm__bally/sprites/ball_blue_large.png"),
+           texture: asset_server.load("sprites/ball_blue_large.png"),
            ..default()
        },
        Player {}
@@ -88,7 +88,7 @@ pub fn confine_player_movement(mut player_query: Query<&mut Transform, With<Play
     }
 }
 
-pub fn enemy_hit_player(mut commands: Commands,mut game_over_event_writer: EventWriter<GameOver>, score: Res<Score>, mut player_query: Query<(Entity, &Transform), With<Player>>, enemy_query: Query<&Transform, With<Enemy>>, asset_server: Res<AssetServer>, audio: Res<Audio>) {
+pub fn enemy_hit_player(mut commands: Commands,mut game_over_event_writer: EventWriter<GameOver>, score: Res<Score>, mut player_query: Query<(Entity, &Transform), With<Player>>, enemy_query: Query<&Transform, With<Enemy>>, asset_server: Res<AssetServer>) {
     if let Ok((player_entity, player_transform)) = player_query.get_single_mut() {
         let player_radius = PLAYER_SIZE / 2.0;
         let enemy_radius = ENEMY_SIZE / 2.0;
@@ -98,8 +98,11 @@ pub fn enemy_hit_player(mut commands: Commands,mut game_over_event_writer: Event
 
             if distance < player_radius + enemy_radius {
                 println!("Enemy hit player! Game Over!");
-                let explosion_sound_effect = asset_server.load("__wasm__bally/audio/explosionCrunch_000.ogg");
-                audio.play(explosion_sound_effect);
+                let explosion_sound_effect = asset_server.load("audio/explosionCrunch_000.ogg");
+                commands.spawn(AudioBundle {
+                    source: explosion_sound_effect,
+                    settings: PlaybackSettings::ONCE.with_volume(Volume::new_relative(0.5))
+                });
                 commands.entity(player_entity).despawn();
                 game_over_event_writer.send(GameOver { score: score.value });
             }
@@ -107,7 +110,7 @@ pub fn enemy_hit_player(mut commands: Commands,mut game_over_event_writer: Event
     }
 }
 
-pub fn player_hit_star(mut commands: Commands, player_query: Query<&Transform, With<Player>>, star_query: Query<(Entity, &Transform), With<Star>>, asset_server: Res<AssetServer>, audio: Res<Audio>, mut score: ResMut<Score>) {
+pub fn player_hit_star(mut commands: Commands, player_query: Query<&Transform, With<Player>>, star_query: Query<(Entity, &Transform), With<Star>>, asset_server: Res<AssetServer>, mut score: ResMut<Score>) {
     if let Ok(player_transform) = player_query.get_single() {
         let player_radius = PLAYER_SIZE / 2.0;
         let star_radius = STAR_SIZE / 2.0;
@@ -118,8 +121,11 @@ pub fn player_hit_star(mut commands: Commands, player_query: Query<&Transform, W
             if distance < player_radius + star_radius {
                 println!("Player hit star!");
                 score.value += 1;
-                let laser_sound_effect = asset_server.load("__wasm__bally/audio/laserLarge_000.ogg");
-                audio.play(laser_sound_effect);
+                let laser_sound_effect = asset_server.load("audio/laserLarge_000.ogg");
+                commands.spawn(AudioBundle {
+                    source: laser_sound_effect,
+                    settings: PlaybackSettings::ONCE.with_volume(Volume::new_relative(0.5))
+                });
                 commands.entity(star_entity).despawn(); 
             }
         }

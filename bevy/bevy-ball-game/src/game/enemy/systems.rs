@@ -1,3 +1,4 @@
+use bevy::audio::Volume;
 use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
 use rand::prelude::random;
@@ -16,7 +17,7 @@ pub fn spawn_enemies(mut commands: Commands, window_query: Query<&Window, With<P
         commands.spawn((
             SpriteBundle {
                 transform: Transform::from_xyz(random_x, random_y, 0.0),
-                texture: asset_server.load("__wasm__bally/sprites/ball_red_large.png"),
+                texture: asset_server.load("sprites/ball_red_large.png"),
                 ..default()
             },
             Enemy {
@@ -39,9 +40,9 @@ pub fn enemy_movement(mut enemy_query: Query<(&mut Transform, &Enemy)>, time: Re
     }
 }
 
-pub fn update_enemy_direction(mut enemy_query: Query<(&Transform, &mut Enemy)>, window_query: Query<&Window, With<PrimaryWindow>>, audio: Res<Audio>, asset_server: Res<AssetServer>) {
+pub fn update_enemy_direction(mut commands: Commands, mut enemy_query: Query<(&Transform, &mut Enemy)>, window_query: Query<&Window, With<PrimaryWindow>>, asset_server: Res<AssetServer>) {
     let window = window_query.get_single().unwrap();
-    
+
     let half_enemy_size = ENEMY_SIZE / 2.0;
     let x_min = 0.0 + half_enemy_size;
     let x_max = window.width() - half_enemy_size;
@@ -64,8 +65,8 @@ pub fn update_enemy_direction(mut enemy_query: Query<(&Transform, &mut Enemy)>, 
         }
 
         if direction_changed {
-            let sound_effect_1 = asset_server.load("__wasm__bally/audio/pluck_001.ogg");
-            let sound_effect_2 = asset_server.load("__wasm__bally/audio/pluck_002.ogg");
+            let sound_effect_1: Handle<AudioSource> = asset_server.load("audio/pluck_001.ogg");
+            let sound_effect_2: Handle<AudioSource> = asset_server.load("audio/pluck_002.ogg");
 
             let sound_effect = if random::<f32>() > 0.5 {
                 sound_effect_1
@@ -73,7 +74,10 @@ pub fn update_enemy_direction(mut enemy_query: Query<(&Transform, &mut Enemy)>, 
                 sound_effect_2
             };
 
-            audio.play(sound_effect);
+            commands.spawn(AudioBundle {
+                source: sound_effect,
+                settings: PlaybackSettings::ONCE.with_volume(Volume::new_relative(0.5))
+            });
         }
     }
 }
@@ -118,7 +122,7 @@ pub fn spawn_enemies_over_time(mut commands: Commands, window_query: Query<&Wind
         commands.spawn((
             SpriteBundle {
                 transform: Transform::from_xyz(random_x, random_y, 0.0),
-                texture: asset_server.load("__wasm__bally/sprites/ball_red_large.png"),
+                texture: asset_server.load("sprites/ball_red_large.png"),
                 ..default()
             },
             Enemy {

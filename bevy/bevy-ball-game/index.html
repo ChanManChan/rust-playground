@@ -33,9 +33,10 @@
     <button id="start-game-btn">
       Start Game
     </button>
+    <canvas id="nandu"></canvas>
   </body>
   <script type="module">
-    import init from './out/bevy-ball-game.js'
+    import init from './bally/bevy-ball-game.js'
     document.getElementById('start-game-btn').addEventListener('click', () => {
       init()
     })

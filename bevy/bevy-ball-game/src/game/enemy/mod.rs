@@ -2,8 +2,9 @@ pub mod components;
 pub mod resources;
 mod systems;
 
-use bevy::app::IntoSystemAppConfig;
-use bevy::ecs::schedule::{IntoSystemConfigs, OnEnter, OnExit, OnUpdate};
+use bevy::app::Update;
+use bevy::ecs::schedule::common_conditions::in_state;
+use bevy::ecs::schedule::{IntoSystemConfigs, OnEnter, OnExit};
 
 use crate::AppState;
 
@@ -22,11 +23,11 @@ impl bevy::prelude::Plugin for EnemyPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
         app
         .init_resource::<EnemySpawnTimer>()
-        .add_system(spawn_enemies.in_schedule(OnEnter(AppState::Game)))
-        .add_systems((enemy_movement, update_enemy_direction, confine_enemy_movement, tick_enemy_spawn_timer, spawn_enemies_over_time)
-            .in_set(OnUpdate(AppState::Game))
-            .in_set(OnUpdate(SimulationState::Running))
+        .add_systems(OnEnter(AppState::Game), spawn_enemies)
+        .add_systems(Update, (enemy_movement, update_enemy_direction.after(enemy_movement), confine_enemy_movement.after(update_enemy_direction), tick_enemy_spawn_timer, spawn_enemies_over_time)
+            .run_if(in_state(AppState::Game))
+            .run_if(in_state(SimulationState::Running))
         )
-        .add_system(despawn_enemies.in_schedule(OnExit(AppState::Game)));
+        .add_systems(OnExit(AppState::Game), despawn_enemies);
     }
 }

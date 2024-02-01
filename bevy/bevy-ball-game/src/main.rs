@@ -3,28 +3,28 @@ mod systems;
 mod game;
 mod main_menu;
 
-use bevy::{app::PluginGroup, ecs::schedule::States, prelude::{default, App, DefaultPlugins}, window::{Window, WindowPlugin}};
+use bevy::{app::{PluginGroup, Startup, Update}, asset::{AssetMetaCheck, AssetPlugin}, ecs::schedule::States, prelude::{default, App, DefaultPlugins}, window::{Window, WindowPlugin}};
 use game::GamePlugin;
 use main_menu::MainMenuPlugin;
 use systems::*;
 
 fn main() {
     App::new()
-        .add_plugins(DefaultPlugins.set(WindowPlugin {
+        .insert_resource(AssetMetaCheck::Never)
+        .add_plugins(DefaultPlugins.set(AssetPlugin {
+            file_path: "__wasm__bally".to_string(),
+            ..default()
+        }).set(WindowPlugin {
             primary_window: Some(Window {
-                canvas: Some("#nandu".to_string()),
+                canvas: Some("#game-wrapper-canvas".to_string()),
                 ..default()
             }),
             ..default()
         }))
         .add_state::<AppState>()
-        .add_plugin(GamePlugin)
-        .add_plugin(MainMenuPlugin)
-        .add_startup_system(spawn_camera)
-        .add_system(transition_to_game_state)
-        .add_system(transition_to_main_menu_state)
-        .add_system(exit_game)
-        .add_system(handle_game_over)
+        .add_plugins((GamePlugin, MainMenuPlugin))
+        .add_systems(Startup, spawn_camera)
+        .add_systems(Update, (transition_to_game_state, transition_to_main_menu_state, exit_game, handle_game_over))
         .run();
 }
 
