@@ -3,7 +3,8 @@ mod systems;
 mod game;
 mod main_menu;
 
-use bevy::{app::{PluginGroup, Startup, Update}, asset::{AssetMetaCheck, AssetPlugin}, ecs::schedule::States, prelude::{default, App, DefaultPlugins}, window::{Window, WindowPlugin}};
+use bevy::{app::{PluginGroup, Startup, Update}, asset::{AssetMetaCheck, AssetPlugin}, ecs::{schedule::States}, prelude::{default, App, DefaultPlugins}, window::{Window, WindowPlugin}};
+use bevy::window::PresentMode;
 use game::GamePlugin;
 use main_menu::MainMenuPlugin;
 use systems::*;
@@ -16,6 +17,8 @@ fn main() {
             ..default()
         }).set(WindowPlugin {
             primary_window: Some(Window {
+                focused: true,
+                present_mode: PresentMode::AutoVsync,
                 canvas: Some("#game-wrapper-canvas".to_string()),
                 ..default()
             }),
