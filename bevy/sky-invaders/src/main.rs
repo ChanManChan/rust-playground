@@ -1,17 +1,21 @@
 mod asset_loader;
 mod asteroids;
 mod camera;
+mod collision_detection;
 mod debug;
+mod despawn;
 mod movement;
 mod spaceship;
 
 use crate::camera::CameraPlugin;
 use crate::debug::DebugPlugin;
+use crate::despawn::DespawnPlugin;
 use crate::movement::MovementPlugin;
 use crate::spaceship::SpaceshipPlugin;
 use asset_loader::AssetLoaderPlugin;
 use asteroids::AsteroidPlugin;
 use bevy::prelude::*;
+use collision_detection::CollisionDetectionPlugin;
 
 fn main() {
     App::new()
@@ -26,6 +30,8 @@ fn main() {
         .add_plugins(SpaceshipPlugin)
         .add_plugins(AsteroidPlugin)
         .add_plugins(MovementPlugin)
-        .add_plugins(DebugPlugin)
+        .add_plugins(CollisionDetectionPlugin)
+        .add_plugins(DespawnPlugin)
+        //        .add_plugins(DebugPlugin)
         .run();
 }

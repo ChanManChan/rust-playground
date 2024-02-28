@@ -1,3 +1,4 @@
+use crate::collision_detection::Collider;
 use bevy::app::{App, Plugin, Update};
 use bevy::ecs::bundle::Bundle;
 use bevy::ecs::component::Component;
@@ -32,6 +33,7 @@ impl Acceleration {
 
 #[derive(Bundle)]
 pub struct MovingObjectBundle {
+    pub collider: Collider,
     pub velocity: Velocity,
     pub acceleration: Acceleration,
     pub model: SceneBundle,
