@@ -1,7 +1,9 @@
 use crate::collision_detection::Collider;
+use crate::schedule::InGameSet;
 use bevy::app::{App, Plugin, Update};
 use bevy::ecs::bundle::Bundle;
 use bevy::ecs::component::Component;
+use bevy::ecs::schedule::IntoSystemConfigs;
 use bevy::math::Vec3;
 use bevy::prelude::{Query, Res, Transform};
 use bevy::scene::SceneBundle;
@@ -41,7 +43,12 @@ pub struct MovingObjectBundle {
 
 impl Plugin for MovementPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, (update_velocity, update_position));
+        app.add_systems(
+            Update,
+            (update_velocity, update_position)
+                .chain()
+                .in_set(InGameSet::EntityUpdates),
+        );
     }
 }
 

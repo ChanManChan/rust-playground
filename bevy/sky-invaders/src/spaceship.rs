@@ -1,10 +1,15 @@
 use crate::asset_loader::SceneAssets;
-use crate::collision_detection::Collider;
+use crate::collision_detection::{Collider, CollisionDamage};
+use crate::health::Health;
 use crate::movement::{Acceleration, MovingObjectBundle, Velocity};
+use crate::schedule::InGameSet;
+use crate::state::GameState;
 use bevy::app::{App, Plugin, PostStartup, Update};
 use bevy::ecs::component::Component;
+use bevy::ecs::entity::Entity;
 use bevy::ecs::query::With;
-use bevy::ecs::system::Query;
+use bevy::ecs::schedule::{IntoSystemConfigs, NextState, OnEnter};
+use bevy::ecs::system::{Query, ResMut};
 use bevy::input::keyboard::KeyCode;
 use bevy::input::ButtonInput;
 use bevy::math::{EulerRot, Vec3};
@@ -16,11 +21,16 @@ use bevy::utils::default;
 const STARTING_TRANSLATION: Vec3 = Vec3::new(0., 0., -20.);
 const SPACESHIP_SPEED: f32 = 25.0;
 const SPACESHIP_ROTATION_SPEED: f32 = 2.5;
-const SPACESHIP_ROLL_SPEED: f32 = 15.5;
+const SPACESHIP_ROLL_SPEED: f32 = 20.5;
 const SPACESHIP_RADIUS: f32 = 5.0;
+const SPACESHIP_HEALTH: f32 = 100.;
+const SPACESHIP_COLLISION_DAMAGE: f32 = 100.;
+
 const MISSLE_SPEED: f32 = 50.;
 const MISSLE_FORWARD_SPAWN_SCALAR: f32 = 7.5;
 const MISSLE_RADIUS: f32 = 1.0;
+const MISSLE_HEALTH: f32 = 1.;
+const MISSLE_COLLISION_DAMAGE: f32 = 5.;
 
 #[derive(Component, Debug)]
 pub struct Spaceship;
@@ -28,14 +38,26 @@ pub struct Spaceship;
 #[derive(Component, Debug)]
 pub struct SpaceshipMissile;
 
+#[derive(Component, Debug)]
+pub struct SpaceshipShield;
+
 pub struct SpaceshipPlugin;
 
 impl Plugin for SpaceshipPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(PostStartup, spawn_spaceship).add_systems(
-            Update,
-            (spaceship_movement_controls, spaceship_weapon_controls),
-        );
+        app.add_systems(PostStartup, spawn_spaceship)
+            .add_systems(OnEnter(GameState::GameOver), spawn_spaceship)
+            .add_systems(
+                Update,
+                (
+                    spaceship_movement_controls,
+                    spaceship_weapon_controls,
+                    spaceship_shield_controls,
+                )
+                    .chain()
+                    .in_set(InGameSet::UserInput),
+            )
+            .add_systems(Update, spaceship_destroyed.in_set(InGameSet::EntityUpdates));
     }
 }
 
@@ -52,6 +74,8 @@ fn spawn_spaceship(mut commands: Commands, scene_assets: Res<SceneAssets>) {
             },
         },
         Spaceship,
+        Health::new(SPACESHIP_HEALTH),
+        CollisionDamage::new(SPACESHIP_COLLISION_DAMAGE),
     ));
 }
 
@@ -60,7 +84,9 @@ fn spaceship_movement_controls(
     keyboard_input: Res<ButtonInput<KeyCode>>,
     time: Res<Time>,
 ) {
-    let (mut transform, mut velocity) = query.single_mut();
+    let Ok((mut transform, mut velocity)) = query.get_single_mut() else {
+        return;
+    };
     let mut rotation = 0.;
     let mut roll = 0.;
     let mut movement = 0.;
@@ -102,7 +128,9 @@ fn spaceship_weapon_controls(
     keyboard_input: Res<ButtonInput<KeyCode>>,
     scene_assets: Res<SceneAssets>,
 ) {
-    let transform = query.single();
+    let Ok(transform) = query.get_single() else {
+        return;
+    };
 
     if keyboard_input.pressed(KeyCode::Space) {
         commands.spawn((
@@ -119,6 +147,31 @@ fn spaceship_weapon_controls(
                 },
             },
             SpaceshipMissile,
+            Health::new(MISSLE_HEALTH),
+            CollisionDamage::new(MISSLE_COLLISION_DAMAGE),
         ));
+    }
+}
+
+fn spaceship_shield_controls(
+    mut commands: Commands,
+    query: Query<Entity, With<Spaceship>>,
+    keyboard_input: Res<ButtonInput<KeyCode>>,
+) {
+    let Ok(spaceship) = query.get_single() else {
+        return;
+    };
+
+    if keyboard_input.pressed(KeyCode::Tab) {
+        commands.entity(spaceship).insert(SpaceshipShield);
+    }
+}
+
+fn spaceship_destroyed(
+    mut next_state: ResMut<NextState<GameState>>,
+    query: Query<(), With<Spaceship>>,
+) {
+    if query.get_single().is_err() {
+        next_state.set(GameState::GameOver);
     }
 }

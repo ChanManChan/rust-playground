@@ -4,8 +4,11 @@ mod camera;
 mod collision_detection;
 mod debug;
 mod despawn;
+mod health;
 mod movement;
+mod schedule;
 mod spaceship;
+mod state;
 
 use crate::camera::CameraPlugin;
 use crate::debug::DebugPlugin;
@@ -16,6 +19,8 @@ use asset_loader::AssetLoaderPlugin;
 use asteroids::AsteroidPlugin;
 use bevy::prelude::*;
 use collision_detection::CollisionDetectionPlugin;
+use schedule::SchedulePlugin;
+use state::StatePlugin;
 
 fn main() {
     App::new()
@@ -32,6 +37,8 @@ fn main() {
         .add_plugins(MovementPlugin)
         .add_plugins(CollisionDetectionPlugin)
         .add_plugins(DespawnPlugin)
-        //        .add_plugins(DebugPlugin)
+        .add_plugins(DebugPlugin)
+        .add_plugins(SchedulePlugin)
+        .add_plugins(StatePlugin)
         .run();
 }
