@@ -1,13 +1,14 @@
 use bevy::prelude::*;
 
+use crate::asset_loader::GameAssets;
 use crate::game::ui::hud::components::*;
 use crate::game::ui::hud::styles::*;
 
-pub fn spawn_hud(mut commands: Commands, asset_server: Res<AssetServer>) {
-    build_hud(&mut commands, &asset_server);
+pub fn spawn_hud(mut commands: Commands, game_assets: Res<GameAssets>) {
+    build_hud(&mut commands, &game_assets);
 }
 
-pub fn build_hud(commands: &mut Commands, asset_server: &Res<AssetServer>) -> Entity {
+pub fn build_hud(commands: &mut Commands, game_assets: &Res<GameAssets>) -> Entity {
     let hud_entity = commands
         .spawn((
             NodeBundle {
@@ -28,7 +29,7 @@ pub fn build_hud(commands: &mut Commands, asset_server: &Res<AssetServer>) -> En
                     // Star Image
                     parent.spawn(ImageBundle {
                         style: IMAGE_STYLE,
-                        image: asset_server.load("sprites/star.png").into(),
+                        image: game_assets.star.clone().into(),
                         ..default()
                     });
 
@@ -37,10 +38,7 @@ pub fn build_hud(commands: &mut Commands, asset_server: &Res<AssetServer>) -> En
                         TextBundle {
                             style: Style { ..default() },
                             text: Text {
-                                sections: vec![TextSection::new(
-                                    "0",
-                                    get_text_style(&asset_server),
-                                )],
+                                sections: vec![TextSection::new("0", get_text_style(&game_assets))],
                                 alignment: TextAlignment::Center,
                                 ..default()
                             },
@@ -63,10 +61,7 @@ pub fn build_hud(commands: &mut Commands, asset_server: &Res<AssetServer>) -> En
                         TextBundle {
                             style: Style { ..default() },
                             text: Text {
-                                sections: vec![TextSection::new(
-                                    "0",
-                                    get_text_style(&asset_server),
-                                )],
+                                sections: vec![TextSection::new("0", get_text_style(&game_assets))],
                                 alignment: TextAlignment::Center,
                                 ..default()
                             },
@@ -74,11 +69,11 @@ pub fn build_hud(commands: &mut Commands, asset_server: &Res<AssetServer>) -> En
                         },
                         EnemyText {},
                     ));
-                    
+
                     // Enemy Image
                     parent.spawn(ImageBundle {
                         style: IMAGE_STYLE,
-                        image: asset_server.load("sprites/ball_red_large.png").into(),
+                        image: game_assets.red_ball.clone().into(),
                         ..default()
                     });
                 });

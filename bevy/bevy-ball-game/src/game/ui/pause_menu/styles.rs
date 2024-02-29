@@ -1,5 +1,7 @@
 use bevy::prelude::*;
 
+use crate::asset_loader::GameAssets;
+
 pub const BACKGROUND_COLOR: Color = Color::rgba(0.25, 0.25, 0.25, 0.5);
 
 pub const NORMAL_BUTTON: Color = Color::rgb(0.15, 0.15, 0.15);
@@ -15,7 +17,7 @@ pub const PAUSE_MENU_STYLE: Style = {
     style.align_items = AlignItems::Center;
     style.width = Val::Percent(100.0);
     style.height = Val::Percent(100.0);
-    
+
     style
 };
 
@@ -30,7 +32,7 @@ pub const PAUSE_MENU_CONTAINER_STYLE: Style = {
     style.height = Val::Px(400.0);
     style.row_gap = Val::Px(8.0);
     style.column_gap = Val::Px(8.0);
-    
+
     style
 };
 
@@ -41,21 +43,21 @@ pub const BUTTON_STYLE: Style = {
     style.height = Val::Px(80.0);
     style.justify_content = JustifyContent::Center;
     style.align_items = AlignItems::Center;
-    
+
     style
 };
 
-pub fn get_title_text_style(asset_server: &Res<AssetServer>) -> TextStyle {
+pub fn get_title_text_style(game_assets: &Res<GameAssets>) -> TextStyle {
     TextStyle {
-        font: asset_server.load("fonts/FiraSans-Bold.ttf"),
+        font: game_assets.font.clone(),
         font_size: 64.0,
         color: Color::rgb(1.0, 1.0, 1.0),
     }
 }
 
-pub fn get_button_text_style(asset_server: &Res<AssetServer>) -> TextStyle {
+pub fn get_button_text_style(game_assets: &Res<GameAssets>) -> TextStyle {
     TextStyle {
-        font: asset_server.load("fonts/FiraSans-Bold.ttf"),
+        font: game_assets.font.clone(),
         font_size: 32.0,
         color: Color::rgb(1.0, 1.0, 1.0),
     }

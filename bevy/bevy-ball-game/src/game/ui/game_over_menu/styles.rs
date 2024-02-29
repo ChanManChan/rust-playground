@@ -1,5 +1,7 @@
 use bevy::prelude::*;
 
+use crate::asset_loader::GameAssets;
+
 pub const BACKGROUND_COLOR: Color = Color::rgba(0.25, 0.25, 0.25, 0.5);
 
 pub const NORMAL_BUTTON: Color = Color::rgb(0.15, 0.15, 0.15);
@@ -39,26 +41,26 @@ pub const BUTTON_STYLE: Style = {
     style
 };
 
-pub fn get_title_text_style(asset_server: &Res<AssetServer>) -> TextStyle {
+pub fn get_title_text_style(game_assets: &Res<GameAssets>) -> TextStyle {
     TextStyle {
-        font: asset_server.load("fonts/FiraSans-Bold.ttf"),
+        font: game_assets.font.clone(),
         font_size: 64.0,
         color: Color::rgb(1.0, 1.0, 1.0),
     }
 }
 
-pub fn get_final_score_text_style(asset_server: &Res<AssetServer>) -> TextStyle {
+pub fn get_final_score_text_style(game_assets: &Res<GameAssets>) -> TextStyle {
     TextStyle {
-        font: asset_server.load("fonts/FiraSans-Bold.ttf"),
+        font: game_assets.font.clone(),
         font_size: 48.0,
         color: Color::rgb(1.0, 1.0, 1.0),
     }
 }
 
-pub fn get_button_text_style(asset_server: &Res<AssetServer>) -> TextStyle {
+pub fn get_button_text_style(game_assets: &Res<GameAssets>) -> TextStyle {
     TextStyle {
-        font: asset_server.load("fonts/FiraSans-Bold.ttf"),
         font_size: 32.0,
+        font: game_assets.font.clone(),
         color: Color::rgb(1.0, 1.0, 1.0),
     }
 }

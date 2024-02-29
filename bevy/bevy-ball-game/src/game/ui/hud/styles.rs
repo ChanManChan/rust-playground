@@ -1,5 +1,7 @@
 use bevy::prelude::*;
 
+use crate::asset_loader::GameAssets;
+
 pub const BACKGROUND_COLOR: Color = Color::rgba(0.25, 0.25, 0.25, 0.5);
 
 pub const HUD_STYLE: Style = {
@@ -11,7 +13,7 @@ pub const HUD_STYLE: Style = {
     style.align_items = AlignItems::Center;
     style.width = Val::Percent(100.0);
     style.height = Val::Percent(15.0);
-    
+
     style
 };
 
@@ -49,13 +51,13 @@ pub const IMAGE_STYLE: Style = {
     style.width = Val::Px(48.0);
     style.height = Val::Px(48.0);
     style.margin = UiRect::new(Val::Px(8.0), Val::Px(8.0), Val::Px(8.0), Val::Px(8.0));
-    
+
     style
 };
 
-pub fn get_text_style(asset_server: &Res<AssetServer>) -> TextStyle {
+pub fn get_text_style(game_assets: &Res<GameAssets>) -> TextStyle {
     TextStyle {
-        font: asset_server.load("fonts/FiraSans-Bold.ttf"),
+        font: game_assets.font.clone(),
         font_size: 64.0,
         color: Color::rgb(1.0, 1.0, 1.0),
     }

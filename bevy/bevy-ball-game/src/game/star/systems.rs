@@ -1,12 +1,20 @@
+use crate::asset_loader::GameAssets;
 use bevy::ecs::entity::Entity;
-use bevy::prelude::{Commands, Query, Window, With, Res, ResMut, AssetServer, SpriteBundle, Transform, Time, default};
+use bevy::prelude::{
+    default, Commands, Query, Res, ResMut, SpriteBundle, Time, Transform, Window, With,
+};
 use bevy::window::PrimaryWindow;
 use rand::prelude::random;
-use super::resources::StarSpawnTimer;
+
 use super::components::Star;
+use super::resources::StarSpawnTimer;
 use super::NUMBER_OF_STARS;
 
-pub fn spawn_stars(mut commands: Commands, window_query: Query<&Window, With<PrimaryWindow>>, asset_server: Res<AssetServer>) {
+pub fn spawn_stars(
+    mut commands: Commands,
+    window_query: Query<&Window, With<PrimaryWindow>>,
+    game_assets: Res<GameAssets>,
+) {
     let window = window_query.get_single().unwrap();
 
     for _ in 0..NUMBER_OF_STARS {
@@ -16,10 +24,10 @@ pub fn spawn_stars(mut commands: Commands, window_query: Query<&Window, With<Pri
         commands.spawn((
             SpriteBundle {
                 transform: Transform::from_xyz(random_x, random_y, 0.0),
-                texture: asset_server.load("sprites/star.png"),
+                texture: game_assets.star.clone(),
                 ..default()
             },
-            Star {}
+            Star {},
         ));
     }
 }
@@ -34,7 +42,12 @@ pub fn tick_star_spawn_timer(mut star_spawn_timer: ResMut<StarSpawnTimer>, time:
     star_spawn_timer.timer.tick(time.delta());
 }
 
-pub fn spawn_stars_over_time(mut commands: Commands, window_query: Query<&Window, With<PrimaryWindow>>, asset_server: Res<AssetServer>, star_spawn_timer: Res<StarSpawnTimer>) {
+pub fn spawn_stars_over_time(
+    mut commands: Commands,
+    window_query: Query<&Window, With<PrimaryWindow>>,
+    game_assets: Res<GameAssets>,
+    star_spawn_timer: Res<StarSpawnTimer>,
+) {
     if star_spawn_timer.timer.finished() {
         let window = window_query.get_single().unwrap();
         let random_x = random::<f32>() * window.width();
@@ -43,10 +56,10 @@ pub fn spawn_stars_over_time(mut commands: Commands, window_query: Query<&Window
         commands.spawn((
             SpriteBundle {
                 transform: Transform::from_xyz(random_x, random_y, 0.0),
-                texture: asset_server.load("sprites/star.png"),
+                texture: game_assets.star.clone(),
                 ..default()
             },
-            Star {}
+            Star {},
         ));
     }
 }

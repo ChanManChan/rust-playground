@@ -3,11 +3,17 @@ use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
 use rand::prelude::random;
 
+use crate::asset_loader::GameAssets;
+
 use super::components::Enemy;
 use super::resources::EnemySpawnTimer;
-use super::{NUMBER_0F_ENEMIES, ENEMY_SIZE, ENEMY_SPEED};
+use super::{ENEMY_SIZE, ENEMY_SPEED, NUMBER_0F_ENEMIES};
 
-pub fn spawn_enemies(mut commands: Commands, window_query: Query<&Window, With<PrimaryWindow>>, asset_server: Res<AssetServer>) {
+pub fn spawn_enemies(
+    mut commands: Commands,
+    window_query: Query<&Window, With<PrimaryWindow>>,
+    game_assets: Res<GameAssets>,
+) {
     let window = window_query.get_single().unwrap();
 
     for _ in 0..NUMBER_0F_ENEMIES {
@@ -17,12 +23,12 @@ pub fn spawn_enemies(mut commands: Commands, window_query: Query<&Window, With<P
         commands.spawn((
             SpriteBundle {
                 transform: Transform::from_xyz(random_x, random_y, 0.0),
-                texture: asset_server.load("sprites/ball_red_large.png"),
+                texture: game_assets.red_ball.clone(),
                 ..default()
             },
             Enemy {
-                direction: Vec2::new(random::<f32>(), random::<f32>()).normalize()
-            }
+                direction: Vec2::new(random::<f32>(), random::<f32>()).normalize(),
+            },
         ));
     }
 }
@@ -40,7 +46,12 @@ pub fn enemy_movement(mut enemy_query: Query<(&mut Transform, &Enemy)>, time: Re
     }
 }
 
-pub fn update_enemy_direction(mut commands: Commands, mut enemy_query: Query<(&Transform, &mut Enemy)>, window_query: Query<&Window, With<PrimaryWindow>>, asset_server: Res<AssetServer>) {
+pub fn update_enemy_direction(
+    mut commands: Commands,
+    mut enemy_query: Query<(&Transform, &mut Enemy)>,
+    window_query: Query<&Window, With<PrimaryWindow>>,
+    game_assets: Res<GameAssets>,
+) {
     let window = window_query.get_single().unwrap();
 
     let half_enemy_size = ENEMY_SIZE / 2.0;
@@ -49,11 +60,11 @@ pub fn update_enemy_direction(mut commands: Commands, mut enemy_query: Query<(&T
     let y_min = 0.0 + half_enemy_size;
     let y_max = window.height() - half_enemy_size;
 
-    for (transform, mut enemy) in enemy_query.iter_mut()  {
+    for (transform, mut enemy) in enemy_query.iter_mut() {
         let mut direction_changed = false;
 
         let translation = transform.translation;
-        
+
         if translation.x < x_min || translation.x > x_max {
             enemy.direction.x *= -1.0;
             direction_changed = true;
@@ -65,8 +76,8 @@ pub fn update_enemy_direction(mut commands: Commands, mut enemy_query: Query<(&T
         }
 
         if direction_changed {
-            let sound_effect_1: Handle<AudioSource> = asset_server.load("audio/pluck_001.ogg");
-            let sound_effect_2: Handle<AudioSource> = asset_server.load("audio/pluck_002.ogg");
+            let sound_effect_1: Handle<AudioSource> = game_assets.pluck1.clone();
+            let sound_effect_2: Handle<AudioSource> = game_assets.pluck2.clone();
 
             let sound_effect = if random::<f32>() > 0.5 {
                 sound_effect_1
@@ -76,13 +87,16 @@ pub fn update_enemy_direction(mut commands: Commands, mut enemy_query: Query<(&T
 
             commands.spawn(AudioBundle {
                 source: sound_effect,
-                settings: PlaybackSettings::ONCE.with_volume(Volume::new_relative(0.5))
+                settings: PlaybackSettings::ONCE.with_volume(Volume::new_relative(0.5)),
             });
         }
     }
 }
 
-pub fn confine_enemy_movement(mut enemy_query: Query<&mut Transform, With<Enemy>>, window_query: Query<&Window, With<PrimaryWindow>>) {
+pub fn confine_enemy_movement(
+    mut enemy_query: Query<&mut Transform, With<Enemy>>,
+    window_query: Query<&Window, With<PrimaryWindow>>,
+) {
     let window = window_query.get_single().unwrap();
     let half_enemy_size = ENEMY_SIZE / 2.0;
     let x_min = 0.0 + half_enemy_size;
@@ -90,7 +104,7 @@ pub fn confine_enemy_movement(mut enemy_query: Query<&mut Transform, With<Enemy>
     let y_min = 0.0 + half_enemy_size;
     let y_max = window.height() - half_enemy_size;
 
-    for mut transform in enemy_query.iter_mut()  {
+    for mut transform in enemy_query.iter_mut() {
         let mut translation = transform.translation;
 
         if translation.x < x_min {
@@ -105,7 +119,7 @@ pub fn confine_enemy_movement(mut enemy_query: Query<&mut Transform, With<Enemy>
             translation.y = y_max;
         }
 
-        transform.translation = translation;        
+        transform.translation = translation;
     }
 }
 
@@ -113,7 +127,12 @@ pub fn tick_enemy_spawn_timer(mut enemy_spawn_timer: ResMut<EnemySpawnTimer>, ti
     enemy_spawn_timer.timer.tick(time.delta());
 }
 
-pub fn spawn_enemies_over_time(mut commands: Commands, window_query: Query<&Window, With<PrimaryWindow>>, asset_server: Res<AssetServer>, enemy_spawn_timer: Res<EnemySpawnTimer>) {
+pub fn spawn_enemies_over_time(
+    mut commands: Commands,
+    window_query: Query<&Window, With<PrimaryWindow>>,
+    game_assets: Res<GameAssets>,
+    enemy_spawn_timer: Res<EnemySpawnTimer>,
+) {
     if enemy_spawn_timer.timer.finished() {
         let window = window_query.get_single().unwrap();
         let random_x = random::<f32>() * window.width();
@@ -122,12 +141,12 @@ pub fn spawn_enemies_over_time(mut commands: Commands, window_query: Query<&Wind
         commands.spawn((
             SpriteBundle {
                 transform: Transform::from_xyz(random_x, random_y, 0.0),
-                texture: asset_server.load("sprites/ball_red_large.png"),
+                texture: game_assets.red_ball.clone(),
                 ..default()
             },
             Enemy {
-                direction: Vec2::new(random::<f32>(), random::<f32>()).normalize()
-            }
+                direction: Vec2::new(random::<f32>(), random::<f32>()).normalize(),
+            },
         ));
     }
 }

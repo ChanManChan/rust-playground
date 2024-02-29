@@ -1,5 +1,6 @@
 use bevy::{
     asset::AssetMetaCheck,
+    audio::Volume,
     math::*,
     prelude::*,
     sprite::collide_aabb::{collide, Collision},
@@ -45,7 +46,7 @@ const RIGHT_WALL_ID: &str = "RIGHT_WALL";
 
 fn main() {
     App::new()
-        .add_plugins((
+        .add_plugins(
             DefaultPlugins
                 .set(AssetPlugin {
                     file_path: "__wasm__breakout".to_string(),
@@ -58,13 +59,13 @@ fn main() {
                     }),
                     ..default()
                 }),
-            AssetLoaderPlugin,
-        ))
+        )
+        .init_resource::<GameAssets>()
         .insert_resource(AssetMetaCheck::Never)
         .insert_resource(ClearColor(Color::rgb(0.9, 0.9, 0.9)))
         .insert_resource(Scoreboard { score: 0 })
         .add_systems(Update, (bevy::window::close_on_esc, update_scoreboard))
-        .add_systems(Startup, setup)
+        .add_systems(Startup, (load_assets, setup).chain())
         .add_systems(
             FixedUpdate,
             (
@@ -80,15 +81,6 @@ fn main() {
 pub struct GameAssets {
     pub collision_sound: Handle<AudioSource>,
     pub circle: Handle<Image>,
-}
-
-pub struct AssetLoaderPlugin;
-
-impl Plugin for AssetLoaderPlugin {
-    fn build(&self, app: &mut App) {
-        app.init_resource::<GameAssets>()
-            .add_systems(Startup, load_assets);
-    }
 }
 
 fn load_assets(mut game_assets: ResMut<GameAssets>, asset_server: Res<AssetServer>) {
@@ -180,8 +172,8 @@ fn generate_bricks(commands: &mut Commands) {
 fn setup(mut commands: Commands, game_assets: Res<GameAssets>) {
     commands.spawn(Camera2dBundle::default());
 
-    let ball_collision_sound = game_assets.collision_sound.clone();
-    commands.insert_resource(CollisionSound(ball_collision_sound));
+    // let ball_collision_sound = game_assets.collision_sound.clone();
+    // commands.insert_resource(CollisionSound(ball_collision_sound));
 
     commands.spawn((
         SpriteBundle {
@@ -200,8 +192,6 @@ fn setup(mut commands: Commands, game_assets: Res<GameAssets>) {
         Collider { size: PADDLE_SIZE },
     ));
 
-    let ball_texture = game_assets.circle.clone();
-
     commands.spawn((
         SpriteBundle {
             transform: Transform {
@@ -213,7 +203,7 @@ fn setup(mut commands: Commands, game_assets: Res<GameAssets>) {
                 custom_size: Some(BALL_SIZE),
                 ..default()
             },
-            texture: ball_texture,
+            texture: game_assets.circle.clone(),
             ..default()
         },
         Ball { size: BALL_SIZE },
@@ -375,7 +365,7 @@ fn apply_velocity(mut query: Query<(&mut Transform, &Velocity)>, time_step: Res<
 fn check_ball_collisions(
     mut commands: Commands,
     mut score: ResMut<Scoreboard>,
-    collision_sound: Res<CollisionSound>,
+    game_assets: Res<GameAssets>,
     bricks_query: Query<Entity, With<Brick>>,
     mut ball_query: Query<(&mut Velocity, &Transform, &Ball)>,
     mut collider_query: Query<(
@@ -437,8 +427,8 @@ fn check_ball_collisions(
                 }
 
                 commands.spawn(AudioBundle {
-                    source: collision_sound.clone(),
-                    settings: PlaybackSettings::DESPAWN,
+                    source: game_assets.collision_sound.clone(),
+                    settings: PlaybackSettings::ONCE.with_volume(Volume::new_relative(0.5)),
                 });
             }
         }
