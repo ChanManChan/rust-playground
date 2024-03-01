@@ -1,6 +1,9 @@
-use bevy::prelude::*;
+use bevy::{audio::Volume, prelude::*};
 
-use crate::{health::Health, schedule::InGameSet, state::GameState};
+use crate::{
+    asset_loader::SceneAssets, asteroids::ASTEROID_ID, health::Health, schedule::InGameSet,
+    score::Score, state::GameState,
+};
 
 const DESPAWN_DISTANCE: f32 = 100.;
 
@@ -26,16 +29,32 @@ fn despawn_far_away_entities(mut commands: Commands, query: Query<(Entity, &Glob
     }
 }
 
-fn despawn_dead_entities(mut commands: Commands, query: Query<(Entity, &Health)>) {
+fn despawn_dead_entities(
+    mut commands: Commands,
+    query: Query<(Entity, &'static Health)>,
+    mut score: ResMut<Score>,
+    scene_assets: Res<SceneAssets>,
+) {
     for (entity, health) in query.iter() {
         if health.value <= 0. {
+            if health.id == ASTEROID_ID {
+                if health.value == 0. {
+                    score.value += 1;
+                }
+
+                commands.spawn(AudioBundle {
+                    source: scene_assets.explosion.clone(),
+                    settings: PlaybackSettings::ONCE.with_volume(Volume::new(0.5)),
+                });
+            }
+
             commands.entity(entity).despawn_recursive();
         }
     }
 }
 
-fn despawn_all_entities(mut commands: Commands, query: Query<Entity, With<Health>>) {
-    for entity in query.iter() {
+fn despawn_all_entities(mut commands: Commands, query: Query<(Entity, &'static Health)>) {
+    for (entity, _) in query.iter() {
         commands.entity(entity).despawn_recursive();
     }
 }

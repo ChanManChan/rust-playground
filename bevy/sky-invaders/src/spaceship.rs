@@ -19,6 +19,7 @@ use bevy::time::Time;
 use bevy::utils::default;
 
 const STARTING_TRANSLATION: Vec3 = Vec3::new(0., 0., -20.);
+const SPACESHIP_ID: &str = "spaceship";
 const SPACESHIP_SPEED: f32 = 25.0;
 const SPACESHIP_ROTATION_SPEED: f32 = 2.5;
 const SPACESHIP_ROLL_SPEED: f32 = 20.5;
@@ -26,6 +27,7 @@ const SPACESHIP_RADIUS: f32 = 5.0;
 const SPACESHIP_HEALTH: f32 = 100.;
 const SPACESHIP_COLLISION_DAMAGE: f32 = 100.;
 
+const MISSLE_ID: &str = "missle";
 const MISSLE_SPEED: f32 = 50.;
 const MISSLE_FORWARD_SPAWN_SCALAR: f32 = 7.5;
 const MISSLE_RADIUS: f32 = 1.0;
@@ -74,7 +76,7 @@ fn spawn_spaceship(mut commands: Commands, scene_assets: Res<SceneAssets>) {
             },
         },
         Spaceship,
-        Health::new(SPACESHIP_HEALTH),
+        Health::new(SPACESHIP_HEALTH, SPACESHIP_ID),
         CollisionDamage::new(SPACESHIP_COLLISION_DAMAGE),
     ));
 }
@@ -147,7 +149,7 @@ fn spaceship_weapon_controls(
                 },
             },
             SpaceshipMissile,
-            Health::new(MISSLE_HEALTH),
+            Health::new(MISSLE_HEALTH, MISSLE_ID),
             CollisionDamage::new(MISSLE_COLLISION_DAMAGE),
         ));
     }

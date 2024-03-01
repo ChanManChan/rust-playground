@@ -2,7 +2,7 @@ use bevy::{prelude::*, utils::HashMap};
 
 use crate::{
     asteroids::Asteroid,
-    health::{self, Health},
+    health::Health,
     schedule::InGameSet,
     spaceship::{Spaceship, SpaceshipMissile},
 };
@@ -122,7 +122,7 @@ fn handle_collisions<T: Component>(
 
 pub fn apply_collision_damage(
     mut collision_event_reader: EventReader<CollisionEvent>,
-    mut health_query: Query<&mut Health>,
+    mut health_query: Query<&'static mut Health>,
     collision_damage_query: Query<&CollisionDamage>,
 ) {
     for &CollisionEvent {

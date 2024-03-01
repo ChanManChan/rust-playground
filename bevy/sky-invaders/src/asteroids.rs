@@ -20,6 +20,7 @@ const ROTATE_SPEED: f32 = 2.5;
 const RADIUS: f32 = 2.5;
 const HEALTH: f32 = 80.;
 const COLLISION_DAMAGE: f32 = 35.;
+pub const ASTEROID_ID: &str = "asteroid";
 
 #[derive(Component)]
 pub struct Asteroid;
@@ -80,7 +81,7 @@ fn spawn_asteroid(
             },
         },
         Asteroid,
-        Health::new(HEALTH),
+        Health::new(HEALTH, ASTEROID_ID),
         CollisionDamage::new(COLLISION_DAMAGE),
     ));
 }

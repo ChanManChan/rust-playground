@@ -5,6 +5,7 @@ pub struct SceneAssets {
     pub asteroid: Handle<Scene>,
     pub spaceship: Handle<Scene>,
     pub missles: Handle<Scene>,
+    pub explosion: Handle<AudioSource>,
 }
 
 pub struct AssetLoaderPlugin;
@@ -21,5 +22,6 @@ fn load_assets(mut scene_assets: ResMut<SceneAssets>, asset_server: Res<AssetSer
         asteroid: asset_server.load("Asteroid.glb#Scene0"),
         spaceship: asset_server.load("Spaceship.glb#Scene0"),
         missles: asset_server.load("Missiles.glb#Scene0"),
+        explosion: asset_server.load("explosionCrunch_000.ogg"),
     }
 }
