@@ -1,7 +1,6 @@
-use std::ops::Range;
-
 use bevy::prelude::*;
 use rand::Rng;
+use std::ops::Range;
 
 use crate::{
     asset_loader::SceneAssets,

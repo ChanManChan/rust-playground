@@ -19,6 +19,7 @@ use crate::movement::MovementPlugin;
 use crate::spaceship::SpaceshipPlugin;
 use asset_loader::AssetLoaderPlugin;
 use asteroids::AsteroidPlugin;
+use bevy::asset::AssetMetaCheck;
 use bevy::prelude::*;
 use collision_detection::CollisionDetectionPlugin;
 use gameover_menu::GameOverMenuPlugin;
@@ -28,6 +29,7 @@ use state::StatePlugin;
 
 fn main() {
     App::new()
+        .insert_resource(AssetMetaCheck::Never)
         .insert_resource(ClearColor(Color::rgb(0.1, 0., 0.15)))
         .insert_resource(AmbientLight {
             color: Color::WHITE,
