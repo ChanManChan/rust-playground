@@ -65,7 +65,9 @@ fn main() -> Result<(), Box<dyn Error>> {
         while event::poll(Duration::default())? {
             if let Event::Key(key_event) = event::read()? {
                 match key_event.code {
+                    // update the player position
                     KeyCode::Left => player.move_left(),
+                    // update the player position
                     KeyCode::Right => player.move_right(),
                     KeyCode::Char(' ') | KeyCode::Enter => {
                         if player.shoot() {
@@ -82,11 +84,15 @@ fn main() -> Result<(), Box<dyn Error>> {
         }
 
         // Updates
+        // update the shots position
         player.update(delta);
+
+        // update the army position
         if invaders.update(delta) {
             audio.play("move");
         }
 
+        // check if the shot intersects with an invader
         if player.detect_hits(&mut invaders) {
             audio.play("explode");
         }
