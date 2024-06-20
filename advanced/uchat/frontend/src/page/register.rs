@@ -20,6 +20,11 @@ impl PageState {
             form_errors: KeyedNotifications::default(),
         }
     }
+    pub fn cannot_submit(&self) -> bool {
+        self.form_errors.has_messages()
+            || self.username.current().is_empty()
+            || self.password.current().is_empty()
+    }
 }
 
 #[inline_props]
@@ -95,6 +100,11 @@ pub fn Register(cx: Scope) -> Element {
         page_state.with_mut(|state| state.password.set(ev.value.clone()));
     });
 
+    let submit_btn_style = maybe_class!(
+        "btn-disabled",
+        page_state.with(|state| state.cannot_submit())
+    );
+
     cx.render(rsx! {
         form {
             class: "flex flex-col gap-5",
@@ -113,8 +123,9 @@ pub fn Register(cx: Scope) -> Element {
                 notifications: page_state.with(|state| state.form_errors.clone())
             },
             button {
-                class: "btn",
+                class: "btn {submit_btn_style}",
                 r#type: "submit",
+                disabled: page_state.with(|state| state.cannot_submit()),
                 "Signup"
             }
         }
