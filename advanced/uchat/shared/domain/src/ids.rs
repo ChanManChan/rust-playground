@@ -50,6 +50,7 @@ macro_rules! new_id {
 
 new_id!(UserId);
 new_id!(SessionId);
+new_id!(PostId);
 
 #[derive(Debug, thiserror::Error)]
 pub enum IdError {
