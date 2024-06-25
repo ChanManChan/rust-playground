@@ -22,6 +22,7 @@ pub fn App(cx: Scope) -> Element {
                 to: page::HOME,
                 page::Home {}
             },
+            Route { to: page::POST_NEW_CHAT, page::NewChat {} }
             Navbar {}
         }
     })
