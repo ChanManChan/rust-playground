@@ -76,6 +76,7 @@ pub fn NavButton<'a>(cx: Scope<'a, NavButtonProps<'a>>) -> Element {
 }
 
 pub fn Navbar(cx: Scope) -> Element {
+    let router = use_router(cx);
     let hide_new_post_popup = use_state(cx, || true);
     cx.render(rsx! {
         nav {
@@ -85,12 +86,16 @@ pub fn Navbar(cx: Scope) -> Element {
                 NavButton {
                     img: "/static/icons/icon-home.svg",
                     label: "Home",
-                    onclick: |_| ()
+                    onclick: |_| {
+                        router.navigate_to(page::HOME);
+                    }
                 },
                 NavButton {
                     img: "/static/icons/icon-trending.svg",
                     label: "Tending",
-                    onclick: |_| ()
+                    onclick: |_| {
+                        router.navigate_to(page::POST_TRENDING);
+                    }
                 },
                 NavButton {
                     img: "/static/icons/icon-new-post.svg",

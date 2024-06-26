@@ -1,13 +1,19 @@
 #![allow(non_snake_case)]
 
-use crate::elements::Navbar;
+use crate::elements::post::PostManager;
+use crate::elements::toaster::ToastRoot;
+use crate::elements::{toaster::Toaster, Navbar};
 use crate::prelude::*;
 use dioxus::prelude::*;
 use dioxus_router::{Route, Router};
-use fermi::use_init_atom_root;
+use fermi::{use_init_atom_root, AtomRef};
+
+pub static TOASTER: AtomRef<Toaster> = |_| Toaster::default();
+pub static POSTMANAGER: AtomRef<PostManager> = |_| PostManager::default();
 
 pub fn App(cx: Scope) -> Element {
     use_init_atom_root(cx);
+    let toaster = use_toaster(cx);
     cx.render(rsx! {
         Router {
             Route {
@@ -22,7 +28,9 @@ pub fn App(cx: Scope) -> Element {
                 to: page::HOME,
                 page::Home {}
             },
-            Route { to: page::POST_NEW_CHAT, page::NewChat {} }
+            Route { to: page::POST_NEW_CHAT, page::NewChat {} },
+            Route { to: page::POST_TRENDING, page::Trending {} },
+            ToastRoot { toaster: toaster },
             Navbar {}
         }
     })

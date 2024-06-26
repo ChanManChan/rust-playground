@@ -30,3 +30,4 @@ route!("/account/create" => user::endpoint::CreateUser);
 
 // authorized routes
 route!("/post/new" => post::endpoint::NewPost);
+route!("/posts/trending" => post::endpoint::TrendingPosts);
