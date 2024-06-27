@@ -42,7 +42,7 @@ impl Default for NewPostOptions {
     }
 }
 
-#[derive(Clone, Debug, Deserialize, Serialize, PartialEq)]
+#[derive(Clone, Copy, Debug, Deserialize, Serialize, PartialEq)]
 pub enum LikeStatus {
     Dislike,
     Like,
@@ -62,4 +62,19 @@ pub struct PublicPost {
     pub likes: i64,
     pub dislikes: i64,
     pub boosts: i64,
+}
+
+#[derive(Clone, Copy, Debug, Deserialize, Serialize, PartialEq)]
+pub enum BookmarkAction {
+    Add,
+    Remove,
+}
+
+impl From<BookmarkAction> for bool {
+    fn from(value: BookmarkAction) -> Self {
+        match value {
+            BookmarkAction::Add => true,
+            BookmarkAction::Remove => false,
+        }
+    }
 }

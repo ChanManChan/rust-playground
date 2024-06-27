@@ -12,7 +12,7 @@ use tower_http::{
 };
 use tracing::Level;
 use uchat_endpoint::{
-    post::endpoint::{NewPost, TrendingPosts},
+    post::endpoint::{Bookmark, NewPost, React, TrendingPosts},
     user::endpoint::{CreateUser, Login},
     Endpoint,
 };
@@ -29,6 +29,8 @@ pub fn new_router(state: AppState) -> axum::Router {
         .route(Login::URL, post(with_public_handler::<Login>));
     let authorized_routes = Router::new()
         .route(NewPost::URL, post(with_handler::<NewPost>))
+        .route(Bookmark::URL, post(with_handler::<Bookmark>))
+        .route(React::URL, post(with_handler::<React>))
         .route(TrendingPosts::URL, post(with_handler::<TrendingPosts>));
 
     Router::new()

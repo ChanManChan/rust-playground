@@ -1,10 +1,14 @@
 use axum::{async_trait, Json};
+use chrono::Utc;
 use hyper::StatusCode;
 use uchat_domain::Username;
 use uchat_endpoint::{
     post::{
-        endpoint::{NewPost, NewPostOk, TrendingPosts, TrendingPostsOk},
-        types::{LikeStatus, PublicPost},
+        endpoint::{
+            Bookmark, BookmarkOk, NewPost, NewPostOk, React, ReactOk, TrendingPosts,
+            TrendingPostsOk,
+        },
+        types::{BookmarkAction, LikeStatus, PublicPost},
     },
     RequestFailed,
 };
@@ -32,7 +36,11 @@ impl AuthorizedApiRequest for NewPost {
     }
 }
 
-pub fn to_public(conn: &mut AsyncConnection, post: Post) -> ApiResult<PublicPost> {
+pub fn to_public(
+    conn: &mut AsyncConnection,
+    post: Post,
+    session: Option<&UserSession>,
+) -> ApiResult<PublicPost> {
     use uchat_query::post as query_post;
     use uchat_query::user as query_user;
 
@@ -60,7 +68,12 @@ pub fn to_public(conn: &mut AsyncConnection, post: Post) -> ApiResult<PublicPost
                 }
             },
             like_status: LikeStatus::NoReaction,
-            bookmarked: false,
+            bookmarked: {
+                match session {
+                    Some(session) => query_post::get_bookmark(conn, session.user_id, post.id)?,
+                    None => false,
+                }
+            },
             boosted: false,
             likes: 0,
             dislikes: 0,
@@ -82,7 +95,7 @@ impl AuthorizedApiRequest for TrendingPosts {
     async fn process_request(
         self,
         DbConnection(mut conn): DbConnection,
-        _session: UserSession,
+        session: UserSession,
         _state: AppState,
     ) -> ApiResult<Self::Response> {
         use uchat_query::post as query_post;
@@ -90,7 +103,7 @@ impl AuthorizedApiRequest for TrendingPosts {
 
         for post in query_post::get_trending(&mut conn)? {
             let post_id = post.id;
-            match to_public(&mut conn, post) {
+            match to_public(&mut conn, post, Some(&session)) {
                 Ok(post) => posts.push(post),
                 Err(e) => {
                     tracing::error!(err = %e.err, post_id = ?post_id, "post contains invalid data");
@@ -99,5 +112,68 @@ impl AuthorizedApiRequest for TrendingPosts {
         }
 
         Ok((StatusCode::OK, Json(TrendingPostsOk { posts })))
+    }
+}
+
+#[async_trait]
+impl AuthorizedApiRequest for Bookmark {
+    type Response = (StatusCode, Json<BookmarkOk>);
+    async fn process_request(
+        self,
+        DbConnection(mut conn): DbConnection,
+        session: UserSession,
+        _state: AppState,
+    ) -> ApiResult<Self::Response> {
+        match self.action {
+            BookmarkAction::Add => {
+                uchat_query::post::bookmark(&mut conn, session.user_id, self.post_id)?;
+            }
+            BookmarkAction::Remove => {
+                uchat_query::post::delete_bookmark(&mut conn, session.user_id, self.post_id)?;
+            }
+        }
+
+        Ok((
+            StatusCode::OK,
+            Json(BookmarkOk {
+                status: self.action,
+            }),
+        ))
+    }
+}
+
+#[async_trait]
+impl AuthorizedApiRequest for React {
+    type Response = (StatusCode, Json<ReactOk>);
+    async fn process_request(
+        self,
+        DbConnection(mut conn): DbConnection,
+        session: UserSession,
+        _state: AppState,
+    ) -> ApiResult<Self::Response> {
+        use uchat_endpoint::post::types::LikeStatus;
+
+        let reaction = uchat_query::post::Reaction {
+            post_id: self.post_id,
+            user_id: session.user_id,
+            reaction: None,
+            like_status: match self.like_status {
+                LikeStatus::Like => 1,
+                LikeStatus::Dislike => -1,
+                LikeStatus::NoReaction => 0,
+            },
+            created_at: Utc::now(),
+        };
+
+        uchat_query::post::react(&mut conn, reaction)?;
+
+        Ok((
+            StatusCode::OK,
+            Json(ReactOk {
+                like_status: self.like_status,
+                likes: 0,
+                dislikes: 0,
+            }),
+        ))
     }
 }

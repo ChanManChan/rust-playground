@@ -1,8 +1,13 @@
+use crate::prelude::*;
 use dioxus::prelude::*;
 use fermi::{use_atom_ref, UseAtomRef};
 use indexmap::IndexMap;
 use uchat_domain::ids::PostId;
 use uchat_endpoint::post::types::PublicPost;
+
+pub mod actionbar;
+pub mod content;
+pub mod header;
 
 pub fn use_post_manager(cx: &ScopeState) -> &UseAtomRef<PostManager> {
     use_atom_ref(cx, crate::app::POSTMANAGER)
@@ -43,4 +48,30 @@ impl PostManager {
     pub fn remove(&mut self, post_id: &PostId) {
         self.posts.remove(post_id);
     }
+}
+
+#[inline_props]
+pub fn PublicPostEntry(cx: Scope, post_id: PostId) -> Element {
+    let post_manager = use_post_manager(cx);
+    let router = use_router(cx);
+
+    let this_post = {
+        let post = post_manager.read().get(&post_id).unwrap().clone();
+        use_state(cx, || post)
+    };
+
+    cx.render(rsx! {
+        div {
+            key: "{this_post.id.to_string()}",
+            class: "grid grid-cols-[50px_1fr] gap-2 mb-4",
+            div {},
+            div {
+                class: "flex flex-col gap-3",
+                header::Header { post: this_post },
+                content::Content { post: this_post },
+                actionbar::Actionbar { post_id: this_post.id },
+                hr {}
+            }
+        }
+    })
 }
