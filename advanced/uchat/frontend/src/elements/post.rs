@@ -8,6 +8,7 @@ use uchat_endpoint::post::types::PublicPost;
 pub mod actionbar;
 pub mod content;
 pub mod header;
+pub mod quick_respond;
 
 pub fn use_post_manager(cx: &ScopeState) -> &UseAtomRef<PostManager> {
     use_atom_ref(cx, crate::app::POSTMANAGER)
@@ -53,7 +54,7 @@ impl PostManager {
 #[inline_props]
 pub fn PublicPostEntry(cx: Scope, post_id: PostId) -> Element {
     let post_manager = use_post_manager(cx);
-    let router = use_router(cx);
+    let _router = use_router(cx);
 
     let this_post = {
         let post = post_manager.read().get(&post_id).unwrap().clone();

@@ -1,14 +1,16 @@
+use super::super::handler::save_image;
 use axum::{async_trait, Json};
 use chrono::Utc;
 use hyper::StatusCode;
-use uchat_domain::Username;
+use uchat_domain::{ids::ImageId, Username};
 use uchat_endpoint::{
+    app_url::{self, user_content},
     post::{
         endpoint::{
-            Bookmark, BookmarkOk, NewPost, NewPostOk, React, ReactOk, TrendingPosts,
-            TrendingPostsOk,
+            Bookmark, BookmarkOk, Boost, BoostOk, NewPost, NewPostOk, React, ReactOk,
+            TrendingPosts, TrendingPostsOk,
         },
-        types::{BookmarkAction, LikeStatus, PublicPost},
+        types::{BookmarkAction, BoostAction, ImageKind, LikeStatus, PublicPost},
     },
     RequestFailed,
 };
@@ -30,7 +32,19 @@ impl AuthorizedApiRequest for NewPost {
         session: UserSession,
         _state: AppState,
     ) -> ApiResult<Self::Response> {
-        let post = Post::new(session.user_id, self.content, self.options)?;
+        use uchat_endpoint::post::types::Content;
+
+        let mut content = self.content;
+
+        if let Content::Image(ref mut img) = content {
+            if let ImageKind::DataUrl(data) = &img.kind {
+                let id = ImageId::new();
+                save_image(id, &data).await?;
+                img.kind = ImageKind::Id(id);
+            }
+        }
+
+        let post = Post::new(session.user_id, content, self.options)?;
         let post_id = uchat_query::post::new(&mut conn, post)?;
         Ok((StatusCode::OK, Json(NewPostOk { post_id })))
     }
@@ -41,10 +55,25 @@ pub fn to_public(
     post: Post,
     session: Option<&UserSession>,
 ) -> ApiResult<PublicPost> {
+    use uchat_endpoint::post::types::Content;
     use uchat_query::post as query_post;
     use uchat_query::user as query_user;
 
-    if let Ok(content) = serde_json::from_value(post.content.0) {
+    if let Ok(mut content) = serde_json::from_value(post.content.0) {
+        match content {
+            Content::Image(ref mut image) => {
+                if let ImageKind::Id(id) = image.kind {
+                    let url = app_url::domain_and(user_content::ROOT)
+                        .join(user_content::IMAGES)
+                        .unwrap()
+                        .join(&id.to_string())
+                        .unwrap();
+                    image.kind = ImageKind::Url(url);
+                }
+            }
+            _ => (),
+        }
+        let aggregate_reactions = query_post::aggregate_reactions(conn, post.id)?;
         Ok(PublicPost {
             id: post.id,
             by_user: {
@@ -53,31 +82,37 @@ pub fn to_public(
             },
             content,
             time_posted: post.time_posted,
-            reply_to: {
-                match post.reply_to {
-                    Some(other_post_id) => {
-                        let original_post = query_post::get(conn, other_post_id)?;
-                        let original_user = query_user::get(conn, original_post.user_id)?;
-                        Some((
-                            Username::new(original_user.handle).unwrap(),
-                            original_user.id,
-                            other_post_id,
-                        ))
-                    }
-                    None => None,
+            reply_to: match post.reply_to {
+                Some(other_post_id) => {
+                    let original_post = query_post::get(conn, other_post_id)?;
+                    let original_user = query_user::get(conn, original_post.user_id)?;
+                    Some((
+                        Username::new(original_user.handle).unwrap(),
+                        original_user.id,
+                        other_post_id,
+                    ))
                 }
+                None => None,
             },
-            like_status: LikeStatus::NoReaction,
-            bookmarked: {
-                match session {
-                    Some(session) => query_post::get_bookmark(conn, session.user_id, post.id)?,
-                    None => false,
-                }
+            like_status: match session {
+                Some(session) => match query_post::get_reaction(conn, post.id, session.user_id)? {
+                    Some(reaction) if reaction.like_status == -1 => LikeStatus::Dislike,
+                    Some(reaction) if reaction.like_status == 1 => LikeStatus::Like,
+                    _ => LikeStatus::NoReaction,
+                },
+                None => LikeStatus::NoReaction,
             },
-            boosted: false,
-            likes: 0,
-            dislikes: 0,
-            boosts: 0,
+            bookmarked: match session {
+                Some(session) => query_post::get_bookmark(conn, session.user_id, post.id)?,
+                None => false,
+            },
+            boosted: match session {
+                Some(session) => query_post::get_boost(conn, session.user_id, post.id)?,
+                None => false,
+            },
+            likes: aggregate_reactions.likes,
+            dislikes: aggregate_reactions.dislikes,
+            boosts: aggregate_reactions.boosts,
         })
     } else {
         Err(ApiError {
@@ -152,6 +187,7 @@ impl AuthorizedApiRequest for React {
         _state: AppState,
     ) -> ApiResult<Self::Response> {
         use uchat_endpoint::post::types::LikeStatus;
+        use uchat_query::post as query_post;
 
         let reaction = uchat_query::post::Reaction {
             post_id: self.post_id,
@@ -166,13 +202,41 @@ impl AuthorizedApiRequest for React {
         };
 
         uchat_query::post::react(&mut conn, reaction)?;
+        let aggregate_reactions = query_post::aggregate_reactions(&mut conn, self.post_id)?;
 
         Ok((
             StatusCode::OK,
             Json(ReactOk {
                 like_status: self.like_status,
-                likes: 0,
-                dislikes: 0,
+                likes: aggregate_reactions.likes,
+                dislikes: aggregate_reactions.dislikes,
+            }),
+        ))
+    }
+}
+
+#[async_trait]
+impl AuthorizedApiRequest for Boost {
+    type Response = (StatusCode, Json<BoostOk>);
+    async fn process_request(
+        self,
+        DbConnection(mut conn): DbConnection,
+        session: UserSession,
+        _state: AppState,
+    ) -> ApiResult<Self::Response> {
+        match self.action {
+            BoostAction::Add => {
+                uchat_query::post::boost(&mut conn, session.user_id, self.post_id, Utc::now())?;
+            }
+            BoostAction::Remove => {
+                uchat_query::post::delete_boost(&mut conn, session.user_id, self.post_id)?;
+            }
+        }
+
+        Ok((
+            StatusCode::OK,
+            Json(BoostOk {
+                status: self.action,
             }),
         ))
     }

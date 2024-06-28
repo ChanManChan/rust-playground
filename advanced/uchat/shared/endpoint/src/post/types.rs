@@ -1,10 +1,11 @@
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use uchat_domain::{
-    ids::{PostId, UserId},
-    post::{Headline, Message},
+    ids::{ImageId, PollChoiceId, PostId, UserId},
+    post::{Caption, Headline, Message, PollChoiceDescription, PollHeadline},
     Username,
 };
+use url::Url;
 
 use crate::user::types::PublicUserProfile;
 
@@ -21,8 +22,49 @@ impl From<Chat> for Content {
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq)]
+pub enum ImageKind {
+    DataUrl(String),
+    Id(ImageId),
+    Url(Url),
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq)]
+pub struct Image {
+    pub kind: ImageKind,
+    pub caption: Option<Caption>,
+}
+
+impl From<Image> for Content {
+    fn from(image: Image) -> Self {
+        Self::Image(image)
+    }
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq)]
+pub struct PollChoice {
+    pub id: PollChoiceId,
+    pub num_votes: i64,
+    pub description: PollChoiceDescription,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq)]
+pub struct Poll {
+    pub headline: PollHeadline,
+    pub choices: Vec<PollChoice>,
+    pub voted: Option<PollChoiceId>,
+}
+
+impl From<Poll> for Content {
+    fn from(poll: Poll) -> Self {
+        Self::Poll(poll)
+    }
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq)]
 pub enum Content {
     Chat(Chat),
+    Image(Image),
+    Poll(Poll),
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq)]
@@ -75,6 +117,21 @@ impl From<BookmarkAction> for bool {
         match value {
             BookmarkAction::Add => true,
             BookmarkAction::Remove => false,
+        }
+    }
+}
+
+#[derive(Clone, Copy, Debug, Deserialize, Serialize, PartialEq)]
+pub enum BoostAction {
+    Add,
+    Remove,
+}
+
+impl From<BoostAction> for bool {
+    fn from(value: BoostAction) -> Self {
+        match value {
+            BoostAction::Add => true,
+            BoostAction::Remove => false,
         }
     }
 }

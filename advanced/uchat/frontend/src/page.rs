@@ -16,5 +16,6 @@ pub mod route {
     pub const ACCOUNT_LOGIN: &'static str = "/account/login";
     pub const HOME: &'static str = "/home";
     pub const POST_NEW_CHAT: &'static str = "/post/new_chat";
+    pub const POST_NEW_IMAGE: &'static str = "/post/new_image";
     pub const POST_TRENDING: &'static str = "/posts/trending";
 }

@@ -22,7 +22,10 @@ pub fn NewPostPopup(cx: Scope, hide: UseState<bool>) -> Element {
             }
             div {
                 class: BUTTON_CLASS,
-                onclick: move |_| (),
+                onclick: move |_| {
+                    router.navigate_to(page::POST_NEW_IMAGE);
+                    hide.set(true);
+                },
                 img {
                     class: "invert",
                     src: "/static/icons/icon-image.svg",
