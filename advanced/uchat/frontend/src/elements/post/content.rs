@@ -3,7 +3,11 @@ use dioxus::prelude::*;
 use uchat_endpoint::post::types::Chat as EndpointChat;
 use uchat_endpoint::post::types::Image as EndpointImage;
 use uchat_endpoint::post::types::ImageKind;
+use uchat_endpoint::post::types::Poll as EndpointPoll;
 use uchat_endpoint::post::types::PublicPost;
+
+use super::use_toaster;
+use super::ApiClient;
 
 #[inline_props]
 pub fn Image<'a>(cx: Scope<'a>, content: &'a EndpointImage) -> Element {
@@ -49,6 +53,20 @@ pub fn Chat<'a>(cx: Scope<'a>, content: &'a EndpointChat) -> Element {
 }
 
 #[inline_props]
+pub fn Poll<'a>(cx: Scope<'a>, content: &'a EndpointPoll) -> Element {
+    let toaster = use_toaster(cx);
+    let api_client = ApiClient::global();
+
+    let total_votes = content
+        .choices
+        .iter()
+        .map(|choice| choice.num_votes)
+        .sum::<i64>();
+
+    todo!()
+}
+
+#[inline_props]
 pub fn Content<'a>(cx: Scope<'a>, post: &'a PublicPost) -> Element {
     use uchat_endpoint::post::types::Content as EndpointContent;
     cx.render(rsx! {
@@ -56,6 +74,7 @@ pub fn Content<'a>(cx: Scope<'a>, post: &'a PublicPost) -> Element {
             match &post.content {
                 EndpointContent::Chat(content) => rsx! { Chat { content: &content } },
                 EndpointContent::Image(content) => rsx! { Image { content: &content } },
+                EndpointContent::Poll(content) => rsx! { Poll { content: &content } },
                 _ => rsx! { "" }
             }
         }
