@@ -43,7 +43,7 @@ impl From<Image> for Content {
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq)]
 pub struct PollChoice {
     pub id: PollChoiceId,
-    pub num_votes: i64,
+    pub num_votes: i64, // this is always 0 in the DB
     pub description: PollChoiceDescription,
 }
 
@@ -134,4 +134,9 @@ impl From<BoostAction> for bool {
             BoostAction::Remove => false,
         }
     }
+}
+
+pub enum VoteCast {
+    Yes,
+    AlreadyVoted,
 }

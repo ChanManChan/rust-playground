@@ -13,7 +13,10 @@ pub fn NewPostPopup(cx: Scope, hide: UseState<bool>) -> Element {
             class: "flex flex-col absolute right-0 bottom-[var(--navbar-height)] w-28 items-center {hide_class} navbar-bg-color text-white text-sm",
             div {
                 class: BUTTON_CLASS,
-                onclick: move |_| (),
+                onclick: move |_| {
+                    router.navigate_to(page::POST_NEW_POLL);
+                    hide.set(true);
+                },
                 img {
                     class: "invert",
                     src: "/static/icons/icon-poll.svg",
