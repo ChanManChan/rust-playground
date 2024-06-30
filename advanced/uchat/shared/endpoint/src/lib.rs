@@ -53,6 +53,10 @@ route!("/account/create" => user::endpoint::CreateUser);
 // authorized routes
 route!("/post/new" => post::endpoint::NewPost);
 route!("/posts/trending" => post::endpoint::TrendingPosts);
+route!("/posts/home" => post::endpoint::HomePosts);
+route!("/posts/liked" => post::endpoint::LikedPosts);
+route!("/posts/bookmarked" => post::endpoint::BookmarkedPosts);
 route!("/post/bookmark" => post::endpoint::Bookmark);
 route!("/post/react" => post::endpoint::React);
 route!("/post/boost" => post::endpoint::Boost);
+route!("/post/vote" => post::endpoint::Vote);

@@ -170,6 +170,35 @@ pub fn NewImage(cx: Scope) -> Element {
     );
 
     cx.render(rsx! {
+        Appbar {
+           title: "New Image",
+           AppbarImgButton {
+               click_handler: move |_| router.replace_route(page::POST_NEW_CHAT, None, None),
+               img: "/static/icons/icon-message.svg",
+               label: "Chat",
+               title: "Post a new chat",
+           }
+           AppbarImgButton {
+               click_handler: move |_| (),
+               img: "/static/icons/icon-image.svg",
+               label: "Image",
+               disabled: true,
+               title: "Post a new image",
+               append_class: appbar::BUTTON_SELECTED,
+           }
+           AppbarImgButton {
+               click_handler: move |_| router.replace_route(page::POST_NEW_POLL, None, None),
+               img: "/static/icons/icon-poll.svg",
+               label: "Poll",
+               title: "Post a new poll",
+           }
+           AppbarImgButton {
+               click_handler: move |_| router.pop_route(),
+               img: "/static/icons/icon-back.svg",
+               label: "Back",
+               title: "Go to the previous page",
+           }
+       }
        form {
            class: "flex flex-col gap-4",
            onsubmit: form_onsubmit,

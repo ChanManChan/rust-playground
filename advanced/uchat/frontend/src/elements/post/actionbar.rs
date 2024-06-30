@@ -162,7 +162,7 @@ pub fn LikeDislike(
                     });
                 }
                 Err(e) => toaster.write().error(
-                    format!("Failed to react to post post: {}", e),
+                    format!("Failed to react to post: {}", e),
                     chrono::Duration::seconds(3),
                 ),
             }
