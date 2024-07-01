@@ -70,6 +70,5 @@ pub fn Appbar<'a>(cx: Scope<'a, AppbarProps<'a>>) -> Element {
                 &cx.props.children
             }
         }
-
     })
 }

@@ -139,7 +139,7 @@ pub fn NewChat(cx: Scope) -> Element {
            title: "New Chat",
            AppbarImgButton {
                click_handler: move |_| (),
-               img: "/static/icons/icon-message.svg",
+               img: "/static/icons/icon-messages.svg",
                label: "Chat",
                title: "Post a new chat",
                disabled: true,

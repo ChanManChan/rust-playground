@@ -1,9 +1,11 @@
+pub mod edit_profile;
 pub mod home;
 pub mod login;
 pub mod new_post;
 pub mod register;
 pub mod trending;
 
+pub use edit_profile::EditProfile;
 pub use home::bookmarked::HomeBookmarked;
 pub use home::liked::HomeLiked;
 pub use home::Home;
@@ -23,4 +25,5 @@ pub mod route {
     pub const POST_NEW_IMAGE: &'static str = "/post/new_image";
     pub const POST_NEW_POLL: &'static str = "/post/new_poll";
     pub const POST_TRENDING: &'static str = "/posts/trending";
+    pub const PROFILE_EDIT: &'static str = "/profile/edit";
 }

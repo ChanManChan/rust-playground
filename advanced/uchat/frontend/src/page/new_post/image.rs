@@ -28,7 +28,7 @@ impl PageState {
 }
 
 #[inline_props]
-pub fn ImageInput(cx: Scope, page_state: UseRef<PageState>) -> Element {
+pub fn ImagePreview(cx: Scope, page_state: UseRef<PageState>) -> Element {
     let image_data = &page_state.read().image;
 
     let Preview = if let Some(ref image) = image_data {
@@ -53,7 +53,7 @@ pub fn ImageInput(cx: Scope, page_state: UseRef<PageState>) -> Element {
 }
 
 #[inline_props]
-pub fn ImagePreview(cx: Scope, page_state: UseRef<PageState>) -> Element {
+pub fn ImageInput(cx: Scope, page_state: UseRef<PageState>) -> Element {
     let toaster = use_toaster(cx);
     cx.render(rsx! {
         div {
@@ -174,7 +174,7 @@ pub fn NewImage(cx: Scope) -> Element {
            title: "New Image",
            AppbarImgButton {
                click_handler: move |_| router.replace_route(page::POST_NEW_CHAT, None, None),
-               img: "/static/icons/icon-message.svg",
+               img: "/static/icons/icon-messages.svg",
                label: "Chat",
                title: "Post a new chat",
            }

@@ -221,7 +221,7 @@ pub fn NewPoll(cx: Scope) -> Element {
            title: "New Poll",
            AppbarImgButton {
                click_handler: move |_| router.replace_route(page::POST_NEW_CHAT, None, None),
-               img: "/static/icons/icon-message.svg",
+               img: "/static/icons/icon-messages.svg",
                label: "Chat",
                title: "Post a new chat",
            }
