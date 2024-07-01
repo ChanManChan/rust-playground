@@ -129,7 +129,7 @@ pub fn DisplayNameInput(cx: Scope, page_state: UseRef<PageState>) -> Element {
 pub fn PasswordInput(cx: Scope, page_state: UseRef<PageState>) -> Element {
     use uchat_domain::user::Password;
 
-    let check_password = move || {
+    let check_password_mismatch = move || {
         let password_matches =
             page_state.with(|page_state| page_state.password == page_state.password_confirmation);
 
@@ -157,7 +157,7 @@ pub fn PasswordInput(cx: Scope, page_state: UseRef<PageState>) -> Element {
                     }
                     input {
                         id: "password",
-                        class: "input_field",
+                        class: "input-field",
                         r#type: "password",
                         placeholder: "Password",
                         value: "{page_state.read().password}",
@@ -177,7 +177,26 @@ pub fn PasswordInput(cx: Scope, page_state: UseRef<PageState>) -> Element {
                                      state.form_errors.remove("bad-password");
                                      state.form_errors.remove("password-mismatch");
                                 });
+                            } else {
+                                check_password_mismatch();
                             }
+                        }
+                    }
+                }
+                div {
+                    label {
+                        r#for: "password-confirm",
+                        "Confirm"
+                    }
+                    input {
+                        id: "password-confirm",
+                        class: "input-field",
+                        r#type: "password",
+                        placeholder: "Confirm",
+                        value: "{page_state.read().password_confirmation}",
+                        oninput: move |ev| {
+                            page_state.with_mut(|state| state.password_confirmation = ev.value.clone());
+                            check_password_mismatch();
                         }
                     }
                 }
@@ -230,6 +249,7 @@ pub fn EditProfile(cx: Scope) -> Element {
             ImageInput { page_state: page_state.clone() }
             DisplayNameInput { page_state: page_state.clone() }
             EmailInput { page_state: page_state.clone() }
+            PasswordInput { page_state: page_state.clone() }
             KeyedNotificationBox { notifications: page_state.read().form_errors.clone() }
             div {
                 class: "flex flex-row justify-end gap-3",
