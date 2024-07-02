@@ -8,6 +8,7 @@ use uchat_endpoint::post::types::PublicPost;
 pub mod actionbar;
 pub mod content;
 pub mod header;
+pub mod profile_image;
 pub mod quick_respond;
 
 pub fn use_post_manager(cx: &ScopeState) -> &UseAtomRef<PostManager> {
@@ -79,7 +80,7 @@ pub fn PublicPostEntry(cx: Scope, post_id: PostId) -> Element {
         div {
             key: "{this_post.id.to_string()}",
             class: "grid grid-cols-[50px_1fr] gap-2 mb-4",
-            div {},
+            profile_image::ProfileImage { post: this_post }
             div {
                 class: "flex flex-col gap-3",
                 header::Header { post: this_post },

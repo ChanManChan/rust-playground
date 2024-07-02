@@ -49,7 +49,6 @@ pub mod app_url {
 // public routes
 route!("/account/login" => user::endpoint::Login);
 route!("/account/create" => user::endpoint::CreateUser);
-// route!("/profile/view" => user::endpoint::ViewProfile);
 
 // authorized routes
 route!("/post/new" => post::endpoint::NewPost);
@@ -63,6 +62,8 @@ route!("/post/boost" => post::endpoint::Boost);
 route!("/post/vote" => post::endpoint::Vote);
 route!("/profile/update" => user::endpoint::UpdateProfile);
 route!("/profile/me" => user::endpoint::GetMyProfile);
+route!("/profile/view" => user::endpoint::ViewProfile);
+route!("/user/follow" => user::endpoint::FollowUser);
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub enum Update<T> {

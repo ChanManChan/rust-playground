@@ -6,7 +6,7 @@ use dioxus::prelude::*;
 use uchat_domain::UserFacingError;
 
 #[derive(Clone, Debug)]
-enum PreviewImageData {
+pub enum PreviewImageData {
     DataUrl(String),
     Remote(String),
 }
@@ -225,11 +225,16 @@ pub fn EmailInput(cx: Scope, page_state: UseRef<PageState>) -> Element {
                 value: "{page_state.read().email}",
                 oninput: move |ev| {
                     page_state.with_mut(|state| state.email = ev.value.clone());
-                    match Email::new(&ev.value) {
-                        Ok(_) => {
-                            page_state.with_mut(|state| state.form_errors.remove("bad-email"));
-                        },
-                        Err(e) => page_state.with_mut(|state| state.form_errors.set("bad-email", e.formatted_error())),
+
+                    if ev.value.is_empty() {
+                        page_state.with_mut(|state| state.form_errors.remove("bad-email"));
+                    } else {
+                        match Email::new(&ev.value) {
+                            Ok(_) => {
+                                page_state.with_mut(|state| state.form_errors.remove("bad-email"));
+                            },
+                            Err(e) => page_state.with_mut(|state| state.form_errors.set("bad-email", e.formatted_error())),
+                        }
                     }
                 }
             }
@@ -238,13 +243,114 @@ pub fn EmailInput(cx: Scope, page_state: UseRef<PageState>) -> Element {
 }
 
 pub fn EditProfile(cx: Scope) -> Element {
+    let toaster = use_toaster(cx);
+    let api_client = ApiClient::global();
     let router = use_router(cx);
     let page_state = use_ref(cx, PageState::default);
 
+    let disable_submit = page_state.with(|state| state.form_errors.has_messages());
+    let submit_btn_style = maybe_class!("btn-disabled", disable_submit);
+
+    let _fetch_profile = {
+        to_owned![api_client, toaster, page_state];
+        use_future(cx, (), |_| async move {
+            use uchat_endpoint::user::endpoint::{GetMyProfile, GetMyProfileOk};
+            toaster
+                .write()
+                .info("Retrieving profile...", chrono::Duration::seconds(3));
+            let response = fetch_json!(<GetMyProfileOk>, api_client, GetMyProfile);
+            match response {
+                Ok(res) => page_state.with_mut(|state| {
+                    state.display_name = res.display_name.unwrap_or_default();
+                    state.email = res.email.unwrap_or_default();
+                    state.profile_image = res
+                        .profile_image
+                        .map(|img| PreviewImageData::Remote(img.to_string()));
+                }),
+                Err(e) => toaster.write().error(
+                    format!("Failed to retrieve profile: {e}"),
+                    chrono::Duration::seconds(3),
+                ),
+            }
+        });
+    };
+
+    let form_onsubmit = async_handler!(
+        &cx,
+        [api_client, page_state, router, toaster],
+        move |_| async move {
+            use uchat_endpoint::user::endpoint::{UpdateProfile, UpdateProfileOk};
+            use uchat_endpoint::Update;
+
+            let request_data = {
+                use uchat_domain::Password;
+                UpdateProfile {
+                    display_name: {
+                        let name = page_state.with(|state| state.display_name.clone());
+                        if name.is_empty() {
+                            Update::SetNull
+                        } else {
+                            Update::Change(name)
+                        }
+                    },
+                    email: {
+                        let email = page_state.with(|state| state.email.clone());
+                        if email.is_empty() {
+                            Update::SetNull
+                        } else {
+                            Update::Change(email)
+                        }
+                    },
+                    password: {
+                        let password = page_state.with(|state| state.password.clone());
+                        if password.is_empty() {
+                            Update::NoChange
+                        } else {
+                            Update::Change(Password::new(password).unwrap())
+                        }
+                    },
+                    profile_image: {
+                        let profile_image = page_state.with(|state| state.profile_image.clone());
+                        match profile_image {
+                            Some(PreviewImageData::DataUrl(data)) => Update::Change(data),
+                            Some(PreviewImageData::Remote(_)) => Update::NoChange,
+                            None => Update::SetNull,
+                        }
+                    },
+                }
+            };
+
+            let response = fetch_json!(<UpdateProfileOk>, api_client, request_data);
+
+            match response {
+                Ok(_) => {
+                    toaster
+                        .write()
+                        .success("Profile updated", chrono::Duration::seconds(3));
+                    router.navigate_to(crate::page::HOME);
+                }
+                Err(e) => toaster.write().error(
+                    format!("Failed to update profile: {}", e),
+                    chrono::Duration::seconds(3),
+                ),
+            }
+        }
+    );
+
     cx.render(rsx! {
+       Appbar {
+           title: "Profile Edit",
+           AppbarImgButton {
+               click_handler: move |_| router.pop_route(),
+               img: "/static/icons/icon-back.svg",
+               label: "Back",
+               title: "Go to the previous page",
+           }
+       }
         form {
             class: "flex flex-col w-full gap-3",
             prevent_default: "onsubmit",
+            onsubmit: form_onsubmit,
             ImagePreview { page_state: page_state.clone() }
             ImageInput { page_state: page_state.clone() }
             DisplayNameInput { page_state: page_state.clone() }
@@ -260,8 +366,9 @@ pub fn EditProfile(cx: Scope) -> Element {
                     "Cancel"
                 }
                 button {
-                    class: "btn",
+                    class: "btn {submit_btn_style}",
                     r#type: "submit",
+                    disabled: disable_submit,
                     "Submit"
                 }
             }

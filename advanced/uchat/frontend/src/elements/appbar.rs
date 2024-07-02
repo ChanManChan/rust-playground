@@ -1,5 +1,7 @@
-use crate::prelude::*;
 use dioxus::prelude::*;
+use dioxus_router::use_router;
+
+use crate::page::edit_profile::PreviewImageData;
 
 pub const BUTTON_SELECTED: &str = "border-slate-600";
 
@@ -50,6 +52,7 @@ pub struct AppbarProps<'a> {
 }
 
 pub fn Appbar<'a>(cx: Scope<'a, AppbarProps<'a>>) -> Element {
+    let router = use_router(cx);
     cx.render(rsx! {
         div {
             class: "max-w-[var(--content-max-width)] h-[var(--appbar-height)] fixed top-0 right-0 left-0 mx-auto z-50 bg-slate-200",
@@ -57,10 +60,12 @@ pub fn Appbar<'a>(cx: Scope<'a, AppbarProps<'a>>) -> Element {
                 class: "flex flex-row gap-8 items-center w-full pr-5 h-full",
                 div {
                     class: "cursor-pointer",
-                    onclick: move |_| (),
+                    onclick: move |_| {
+                        router.navigate_to(crate::page::PROFILE_EDIT);
+                    },
                     img {
                         class: "profile-portrait",
-                        src: ""
+                        src: "",
                     }
                 }
                 div {

@@ -4,6 +4,7 @@ pub mod login;
 pub mod new_post;
 pub mod register;
 pub mod trending;
+pub mod view_profile;
 
 pub use edit_profile::EditProfile;
 pub use home::bookmarked::HomeBookmarked;
@@ -14,8 +15,11 @@ pub use new_post::*;
 pub use register::Register;
 pub use route::*;
 pub use trending::Trending;
+pub use view_profile::ViewProfile;
 
 pub mod route {
+    use uchat_domain::ids::UserId;
+
     pub const ACCOUNT_REGISTER: &'static str = "/account/register";
     pub const ACCOUNT_LOGIN: &'static str = "/account/login";
     pub const HOME: &'static str = "/home";
@@ -26,4 +30,9 @@ pub mod route {
     pub const POST_NEW_POLL: &'static str = "/post/new_poll";
     pub const POST_TRENDING: &'static str = "/posts/trending";
     pub const PROFILE_EDIT: &'static str = "/profile/edit";
+    pub const PROFILE_VIEW: &'static str = "/profile/view/:user";
+
+    pub fn profile_view(user_id: UserId) -> String {
+        PROFILE_VIEW.replace(":user", &user_id.to_string())
+    }
 }
