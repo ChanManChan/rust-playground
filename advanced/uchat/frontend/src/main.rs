@@ -33,8 +33,9 @@ fn main() {
 
 mod prelude {
     pub use crate::elements::appbar::{self, Appbar, AppbarImgButton};
-    pub use crate::elements::post::use_post_manager;
-    pub use crate::elements::post::PublicPostEntry;
+    pub use crate::elements::local_profile::{use_local_profile, LocalProfile};
+    pub use crate::elements::post::{use_post_manager, PostManager};
+    pub use crate::elements::sidebar::{use_sidebar, SidebarManager};
     pub use crate::elements::toaster::use_toaster;
     pub use crate::page;
     pub use crate::util::api_client::fetch_json;

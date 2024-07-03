@@ -7,12 +7,14 @@ use crate::{
     util::api_client::ApiClient,
 };
 use dioxus::prelude::*;
+use dioxus_router::Link;
 use uchat_domain::UserFacingError;
 
 pub struct PageState {
     username: UseState<String>,
     password: UseState<String>,
     form_errors: KeyedNotifications,
+    server_messages: KeyedNotifications,
 }
 
 impl PageState {
@@ -21,6 +23,7 @@ impl PageState {
             username: use_state(cx, String::new).clone(),
             password: use_state(cx, String::new).clone(),
             form_errors: KeyedNotifications::default(),
+            server_messages: KeyedNotifications::default(),
         }
     }
     pub fn cannot_submit(&self) -> bool {
@@ -81,15 +84,29 @@ pub fn UsernameInput<'a>(
     })
 }
 
+fn RegisterLink(cx: Scope) -> Element {
+    cx.render(rsx! {
+        Link {
+            class: "link text-center",
+            to: page::ACCOUNT_REGISTER,
+            "Create Account"
+        }
+    })
+}
+
 pub fn Login(cx: Scope) -> Element {
     let api_client = ApiClient::global();
     let page_state = PageState::new(cx);
     let page_state = use_ref(cx, || page_state);
     let router = use_router(cx);
+    let local_profile = use_local_profile(cx);
 
-    let form_onsubmit =
-        async_handler!(&cx, [api_client, page_state, router], move |_| async move {
+    let form_onsubmit = async_handler!(
+        &cx,
+        [api_client, page_state, router, local_profile],
+        move |_| async move {
             use uchat_endpoint::user::endpoint::{Login, LoginOk};
+
             let request_data = {
                 use uchat_domain::{Password, Username};
                 Login {
@@ -105,6 +122,7 @@ pub fn Login(cx: Scope) -> Element {
             };
 
             let response = fetch_json!(<LoginOk>, api_client, request_data);
+
             match response {
                 Ok(res) => {
                     crate::util::cookie::set_session(
@@ -112,11 +130,15 @@ pub fn Login(cx: Scope) -> Element {
                         res.session_id,
                         res.session_expires,
                     );
+                    local_profile.write().image = res.profile_image;
+                    local_profile.write().user_id = Some(res.user_id);
                     router.navigate_to(page::HOME);
                 }
-                Err(_) => (),
+                Err(e) => page_state
+                    .with_mut(|state| state.server_messages.set("login-fail", e.to_string())),
             }
-        });
+        }
+    );
 
     let username_oninput = sync_handler!([page_state], move |ev: FormEvent| {
         if let Err(err) = uchat_domain::Username::new(&ev.value) {
@@ -148,18 +170,23 @@ pub fn Login(cx: Scope) -> Element {
             class: "flex flex-col gap-5",
             prevent_default: "onsubmit",
             onsubmit: form_onsubmit,
+            KeyedNotificationBox {
+                legend: "Login Errors",
+                notifications: page_state.with(|state| state.server_messages.clone())
+            }
             UsernameInput {
                 state: page_state.with(|state| state.username.clone()),
                 oninput: username_oninput,
-            },
+            }
             PasswordInput {
                 state: page_state.with(|state| state.password.clone()),
                 oninput: password_oninput,
-            },
+            }
+            RegisterLink {}
             KeyedNotificationBox {
                 legend: "Form Errors",
                 notifications: page_state.with(|state| state.form_errors.clone())
-            },
+            }
             button {
                 class: "btn {submit_btn_style}",
                 r#type: "submit",

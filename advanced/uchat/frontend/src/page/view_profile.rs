@@ -1,16 +1,18 @@
 use std::str::FromStr;
 
+use chrono::Duration;
 use dioxus::prelude::*;
 use dioxus_router::{use_route, use_router};
 use uchat_domain::ids::UserId;
 
-use crate::{fetch_json, prelude::*};
+use crate::prelude::*;
 
 pub fn ViewProfile(cx: Scope) -> Element {
     let api_client = ApiClient::global();
     let toaster = use_toaster(cx);
     let router = use_router(cx);
     let post_manager = use_post_manager(cx);
+    let local_profile = use_local_profile(cx);
 
     let profile = use_ref(cx, || None);
 
@@ -22,9 +24,9 @@ pub fn ViewProfile(cx: Scope) -> Element {
     use_effect(cx, (&user_id,), |(user_id,)| {
         to_owned![api_client, post_manager, profile, toaster];
         async move {
-            post_manager.write().clear();
             use uchat_endpoint::user::endpoint::{ViewProfile, ViewProfileOk};
             let request = ViewProfile { for_user: user_id };
+            post_manager.write().clear();
             let response = fetch_json!(<ViewProfileOk>, api_client, request);
             match response {
                 Ok(res) => {
@@ -39,21 +41,70 @@ pub fn ViewProfile(cx: Scope) -> Element {
         }
     });
 
+    let follow_onclick = async_handler!(&cx, [api_client, toaster, profile], move |_| async move {
+        use uchat_endpoint::user::endpoint::{FollowUser, FollowUserOk};
+        use uchat_endpoint::user::types::FollowAction;
+        let am_following = match profile.read().as_ref() {
+            Some(profile) => profile.am_following,
+            None => false,
+        };
+
+        let request = FollowUser {
+            user_id,
+            action: if am_following {
+                FollowAction::Unfollow
+            } else {
+                FollowAction::Follow
+            },
+        };
+
+        match fetch_json!(<FollowUserOk>, api_client, request) {
+            Ok(res) => {
+                profile.with_mut(|profile| {
+                    profile.as_mut().map(|p| p.am_following = res.status.into())
+                });
+            }
+            Err(e) => {
+                toaster.write().error(
+                    format!("Failed to update follow status: {e}"),
+                    Duration::seconds(3),
+                );
+            }
+        }
+    });
+
     let ProfileSection = match profile.with(|profile| profile.clone()) {
         Some(profile) => {
             let display_name = profile
                 .display_name
                 .map(|name| name.into_inner())
                 .unwrap_or_else(|| "(None)".to_string());
+
             let profile_image = profile
                 .profile_image
                 .map(|url| url.to_string())
                 .unwrap_or_else(|| "".to_string());
+
             let follow_button_text = if profile.am_following {
                 "Unfollow"
             } else {
                 "Follow"
             };
+
+            let FollowButton = local_profile.read().user_id.map(|id| {
+                if id == profile.id {
+                    None
+                } else {
+                    cx.render(rsx! {
+                        button {
+                            class: "btn",
+                            onclick: follow_onclick,
+                            "{follow_button_text}"
+                        }
+                    })
+                }
+            });
+
             rsx! {
                 div {
                     class: "flex flex-col gap-3",
@@ -70,11 +121,7 @@ pub fn ViewProfile(cx: Scope) -> Element {
                     div {
                         "Name: {display_name}"
                     }
-                    button {
-                        class: "btn",
-                        onclick: move |_| (),
-                        "{follow_button_text}"
-                    }
+                    FollowButton
                 }
             }
         }
