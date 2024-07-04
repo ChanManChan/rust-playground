@@ -72,7 +72,7 @@ pub fn PublicPostEntry(cx: Scope, post_id: PostId) -> Element {
     let _router = use_router(cx);
 
     let this_post = {
-        let post = post_manager.read().get(&post_id).unwrap().clone();
+        let post = post_manager.read().get(post_id).unwrap().clone();
         use_state(cx, || post)
     };
 

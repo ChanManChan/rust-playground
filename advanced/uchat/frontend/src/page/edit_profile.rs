@@ -252,7 +252,7 @@ pub fn EditProfile(cx: Scope) -> Element {
     let disable_submit = page_state.with(|state| state.form_errors.has_messages());
     let submit_btn_style = maybe_class!("btn-disabled", disable_submit);
 
-    let _fetch_profile = {
+    {
         to_owned![api_client, toaster, page_state];
         use_future(cx, (), |_| async move {
             use uchat_endpoint::user::endpoint::{GetMyProfile, GetMyProfileOk};

@@ -1,7 +1,7 @@
 use crate::prelude::*;
 use chrono::Duration;
 use dioxus::prelude::*;
-use uchat_domain::{ids::PostId, post::Message};
+use uchat_domain::post::Message;
 
 fn can_submit(message: &str) -> bool {
     message.len() <= Message::MAX_CHARS && !message.is_empty()
@@ -35,7 +35,7 @@ pub fn MessageInput<'a>(
 }
 
 #[inline_props]
-pub fn QuickRespond(cx: Scope, post_id: PostId, opened: UseState<bool>) -> Element {
+pub fn QuickRespond(cx: Scope, opened: UseState<bool>) -> Element {
     let api_client = ApiClient::global();
     let toaster = use_toaster(cx);
     let message = use_state(cx, || "".to_string());

@@ -1,6 +1,5 @@
 use crate::prelude::*;
 use dioxus::prelude::*;
-use dioxus_router::use_router;
 
 pub const BUTTON_SELECTED: &str = "border-slate-600";
 

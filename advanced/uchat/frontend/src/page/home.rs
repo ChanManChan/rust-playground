@@ -12,7 +12,7 @@ pub fn Home(cx: Scope) -> Element {
     let post_manager = use_post_manager(cx);
     let router = use_router(cx);
 
-    let _fetch_posts = {
+    {
         to_owned![api_client, toaster, post_manager];
         use_future(cx, (), |_| async move {
             use uchat_endpoint::post::endpoint::{HomePosts, HomePostsOk};

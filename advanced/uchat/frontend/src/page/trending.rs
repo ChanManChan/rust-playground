@@ -9,7 +9,7 @@ pub fn Trending(cx: Scope) -> Element {
     let toaster = use_toaster(cx);
     let post_manager = use_post_manager(cx);
 
-    let _fetch_trending_posts = {
+    {
         to_owned![api_client, toaster, post_manager];
         use_future(cx, (), |_| async move {
             use uchat_endpoint::post::endpoint::{TrendingPosts, TrendingPostsOk};
