@@ -11,6 +11,26 @@ pub struct ApiError {
     pub err: color_eyre::Report,
 }
 
+#[derive(Debug, thiserror::Error)]
+pub enum ServerError {
+    #[error("Login failed")]
+    Login((StatusCode, String)),
+    #[error("Register failed")]
+    Register((StatusCode, String)),
+}
+
+impl ServerError {
+    pub fn missing_login() -> Self {
+        Self::Login((StatusCode::NOT_FOUND, "User not found".to_string()))
+    }
+    pub fn wrong_password() -> Self {
+        Self::Login((StatusCode::BAD_REQUEST, "Invalid password".to_string()))
+    }
+    pub fn existing_login() -> Self {
+        Self::Register((StatusCode::CONFLICT, "User already exists".to_string()))
+    }
+}
+
 pub fn err_response<T: Into<String>>(code: StatusCode, msg: T) -> Response {
     (
         code,
@@ -23,6 +43,13 @@ impl IntoResponse for ApiError {
     fn into_response(self) -> Response {
         if let Some(code) = self.code {
             return err_response(code, format!("{}", self.err));
+        }
+
+        if let Some(server_err) = self.err.downcast_ref::<ServerError>() {
+            return match server_err {
+                ServerError::Login((code, msg)) => err_response(*code, msg),
+                ServerError::Register((code, msg)) => err_response(*code, msg),
+            };
         }
 
         err_response(StatusCode::INTERNAL_SERVER_ERROR, "server error")
